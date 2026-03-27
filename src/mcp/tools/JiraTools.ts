@@ -179,7 +179,8 @@ export class JiraTools implements ToolModule {
   }
 
   async callTool(name: string, rawArgs: unknown): Promise<unknown | null> {
-    if (name === 'search_jira_issues') {
+    try {
+      if (name === 'search_jira_issues') {
       const args = searchJiraIssuesInputSchema.parse(rawArgs ?? {});
 
       const issues = await this.searchJiraIssuesUseCase.execute({
@@ -301,5 +302,11 @@ export class JiraTools implements ToolModule {
     }
 
     return null;
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Error executing ${name}: ${error?.message || String(error)}` }],
+      };
+    }
   }
 }

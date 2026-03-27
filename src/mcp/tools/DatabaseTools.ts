@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { QueryDatabaseUseCase } from '../../application/usecases/QueryDatabaseUseCase';
-import { DatabaseQueryParameters } from '../../application/interfaces/DatabaseRepository';
+import { DatabaseQueryParameters } from '../../application/interfaces/IDatabaseProvider';
 import { ToolModule } from './ToolModule';
 
 const queryDatabaseInputSchema = z
@@ -55,9 +55,10 @@ export class DatabaseTools implements ToolModule {
       return null;
     }
 
-    const input = queryDatabaseInputSchema.parse(rawArgs ?? {});
+    try {
+      const input = queryDatabaseInputSchema.parse(rawArgs ?? {});
 
-    const result = await this.queryDatabaseUseCase.execute({
+      const result = await this.queryDatabaseUseCase.execute({
       sql: input.sql,
       parameters: input.parameters as DatabaseQueryParameters | undefined,
     });
@@ -81,5 +82,11 @@ export class DatabaseTools implements ToolModule {
         rows: result.rows,
       },
     };
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Error executing ${name}: ${error?.message || String(error)}` }],
+      };
+    }
   }
 }

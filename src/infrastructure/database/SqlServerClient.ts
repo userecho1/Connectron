@@ -3,12 +3,12 @@ import type { config as SqlConfig, ConnectionPool } from 'mssql';
 import {
   DatabaseQueryRequest,
   DatabaseQueryResult,
-  DatabaseRepository,
-} from '../../application/interfaces/DatabaseRepository';
+  IDatabaseProvider,
+} from '../../application/interfaces/IDatabaseProvider';
 import { env } from '../../config/env';
 import { ILogger, logger } from '../../utils/logger';
 
-export class SqlServerClient implements DatabaseRepository {
+export class SqlServerClient implements IDatabaseProvider {
   private pool: ConnectionPool | null = null;
 
   constructor(

@@ -12,6 +12,6 @@ export interface DatabaseQueryResult {
   rowCount: number;
 }
 
-export interface DatabaseRepository {
+export interface IDatabaseProvider {
   query(request: DatabaseQueryRequest): Promise<DatabaseQueryResult>;
 }

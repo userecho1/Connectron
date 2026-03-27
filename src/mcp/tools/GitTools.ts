@@ -159,7 +159,8 @@ export class GitTools implements ToolModule {
   }
 
   async callTool(name: string, rawArgs: unknown): Promise<unknown | null> {
-    if (name === 'git_status') {
+    try {
+      if (name === 'git_status') {
       const args = gitStatusInputSchema.parse(rawArgs ?? {});
       const result = await this.getGitInfoUseCase.getStatus({ repoPath: args.repoPath });
       return {
@@ -218,5 +219,11 @@ export class GitTools implements ToolModule {
     }
 
     return null;
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Error executing ${name}: ${error?.message || String(error)}` }],
+      };
+    }
   }
 }

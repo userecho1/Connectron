@@ -1,7 +1,7 @@
-import { GitOperationRepository, GitStatusResult, GitStatusInput, GitLogInput } from '../interfaces/GitRepository.js';
+import { IGitProvider, GitStatusResult, GitStatusInput, GitLogInput } from '../interfaces/IGitProvider.js';
 
 export class GetGitInfoUseCase {
-  constructor(private readonly gitRepo: GitOperationRepository) {}
+  constructor(private readonly gitRepo: IGitProvider) {}
 
   async getStatus(input: GitStatusInput = {}): Promise<GitStatusResult> {
     return this.gitRepo.getStatus(input);

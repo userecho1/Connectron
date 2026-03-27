@@ -10,7 +10,7 @@ import {
   GetIssueTransitionsInput,
   TransitionJiraIssueInput,
   UpdateJiraIssueFieldsInput,
-} from '../../application/interfaces/JiraRepository.js';
+} from '../../application/interfaces/IJiraProvider.js';
 import { env } from '../../config/env.js';
 
 export class JiraService implements JiraIssueReader {

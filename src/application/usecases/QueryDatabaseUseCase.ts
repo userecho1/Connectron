@@ -1,11 +1,11 @@
 import {
   DatabaseQueryRequest,
   DatabaseQueryResult,
-  DatabaseRepository,
-} from '../interfaces/DatabaseRepository';
+  IDatabaseProvider,
+} from '../interfaces/IDatabaseProvider';
 
 export class QueryDatabaseUseCase {
-  constructor(private readonly databaseRepository: DatabaseRepository) {}
+  constructor(private readonly databaseRepository: IDatabaseProvider) {}
 
   public async execute(request: DatabaseQueryRequest): Promise<DatabaseQueryResult> {
     const normalizedSql = request.sql.trim();

@@ -1,7 +1,7 @@
 import {
   JiraIssueReader,
   UpdateJiraIssueFieldsInput,
-} from '../interfaces/JiraRepository.js';
+} from '../interfaces/IJiraProvider.js';
 
 export class UpdateJiraIssueFieldsUseCase {
   constructor(private readonly jiraRepository: JiraIssueReader) {}

@@ -2,7 +2,7 @@ import {
   GithubPullRequestReader,
   GetFileContentInput,
   GetFileContentResult,
-} from '../interfaces/GithubRepository.js';
+} from '../interfaces/IGithubProvider.js';
 
 export class GetFileContentUseCase {
   constructor(private readonly githubRepository: GithubPullRequestReader) {}

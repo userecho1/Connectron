@@ -2,7 +2,7 @@ import {
   GithubPullRequestReader,
   ListPullRequestsInput,
   ListPullRequestsResult,
-} from '../interfaces/GithubRepository';
+} from '../interfaces/IGithubProvider';
 
 export class ListPullRequestsUseCase {
   constructor(private readonly githubPullRequestReader: GithubPullRequestReader) {}

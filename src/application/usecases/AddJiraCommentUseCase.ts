@@ -2,7 +2,7 @@ import {
   JiraIssueReader,
   AddJiraCommentInput,
   AddJiraCommentResult,
-} from '../interfaces/JiraRepository.js';
+} from '../interfaces/IJiraProvider.js';
 
 export class AddJiraCommentUseCase {
   constructor(private readonly jiraRepository: JiraIssueReader) {}

@@ -12,7 +12,7 @@ import {
   CreatePullRequestResult,
   MergePullRequestInput,
   MergePullRequestResult,
-} from '../../application/interfaces/GithubRepository';
+} from '../../application/interfaces/IGithubProvider';
 
 export class GithubService implements GithubPullRequestReader {
   constructor(private readonly octokit: Octokit) {}

@@ -12,7 +12,7 @@ export interface GitStatusInput {
   repoPath?: string;
 }
 
-export interface GitOperationRepository {
+export interface IGitProvider {
   getStatus(input: GitStatusInput): Promise<GitStatusResult>;
   getLog(input: GitLogInput): Promise<string>;
   add(input: { repoPath?: string; filePattern?: string }): Promise<string>;

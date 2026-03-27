@@ -2,7 +2,7 @@ import {
   CreatePullRequestInput,
   CreatePullRequestResult,
   GithubPullRequestReader,
-} from '../interfaces/GithubRepository.js';
+} from '../interfaces/IGithubProvider.js';
 
 export class CreatePullRequestUseCase {
   constructor(private readonly githubRepository: GithubPullRequestReader) {}

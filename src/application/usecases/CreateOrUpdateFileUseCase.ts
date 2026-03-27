@@ -2,7 +2,7 @@ import {
   CreateOrUpdateFileInput,
   CreateOrUpdateFileResult,
   GithubPullRequestReader,
-} from '../interfaces/GithubRepository.js';
+} from '../interfaces/IGithubProvider.js';
 
 export class CreateOrUpdateFileUseCase {
   constructor(private readonly githubRepository: GithubPullRequestReader) {}

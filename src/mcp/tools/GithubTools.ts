@@ -8,7 +8,7 @@ import {
   PullRequestDirection,
   PullRequestSort,
   PullRequestState,
-} from '../../application/interfaces/GithubRepository';
+} from '../../application/interfaces/IGithubProvider';
 import { ToolModule } from './ToolModule';
 
 const listPullRequestsInputSchema = z
@@ -213,7 +213,8 @@ export class GithubTools implements ToolModule {
   }
 
   public async callTool(name: string, rawArgs: unknown) {
-    if (name === LIST_PULL_REQUESTS_TOOL_NAME) {
+    try {
+      if (name === LIST_PULL_REQUESTS_TOOL_NAME) {
       const input = listPullRequestsInputSchema.parse(rawArgs ?? {});
 
       const result = await this.listPullRequestsUseCase.execute({
@@ -311,5 +312,11 @@ export class GithubTools implements ToolModule {
     }
 
     return null;
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Error executing ${name}: ${error?.message || String(error)}` }],
+      };
+    }
   }
 }
