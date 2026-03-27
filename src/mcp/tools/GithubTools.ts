@@ -118,6 +118,7 @@ const createOrUpdateFileInputSchema = z
     content: z.string().min(1).describe('Base64 or UTF-8 content to write.'),
     sha: z.string().optional().describe('Existing file SHA for update.'),
     branch: z.string().optional().describe('Branch to write to.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating GitHub operations.'),
   })
   .strict();
 
@@ -129,6 +130,7 @@ const createPullRequestInputSchema = z
     head: z.string().min(1).describe('Head branch.'),
     base: z.string().min(1).describe('Base branch.'),
     body: z.string().optional().describe('Pull request body text.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating GitHub operations.'),
   })
   .strict();
 
@@ -143,6 +145,7 @@ const mergePullRequestInputSchema = z
       .enum(['merge', 'squash', 'rebase'])
       .optional()
       .describe('Merge method.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating GitHub operations.'),
   })
   .strict();
 
@@ -172,8 +175,9 @@ export class GithubTools implements ToolModule {
             content: { type: 'string' },
             sha: { type: 'string' },
             branch: { type: 'string' },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
-          required: ['owner', 'repo', 'path', 'message', 'content'],
+          required: ['owner', 'repo', 'path', 'message', 'content', 'confirm'],
           additionalProperties: false,
         },
       },
@@ -189,8 +193,9 @@ export class GithubTools implements ToolModule {
             head: { type: 'string' },
             base: { type: 'string' },
             body: { type: 'string' },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
-          required: ['owner', 'repo', 'title', 'head', 'base'],
+          required: ['owner', 'repo', 'title', 'head', 'base', 'confirm'],
           additionalProperties: false,
         },
       },
@@ -206,8 +211,9 @@ export class GithubTools implements ToolModule {
             commit_title: { type: 'string' },
             commit_message: { type: 'string' },
             merge_method: { type: 'string', enum: ['merge', 'squash', 'rebase'] },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
-          required: ['owner', 'repo', 'pull_number'],
+          required: ['owner', 'repo', 'pull_number', 'confirm'],
           additionalProperties: false,
         },
       },

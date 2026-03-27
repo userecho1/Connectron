@@ -25,6 +25,7 @@ const createTicketInputSchema = z
     issueType: z.string().min(1).describe('Issue type name (e.g. Task, Bug).'),
     assignee: z.string().optional().describe('Assignee username.'),
     priority: z.string().optional().describe('Priority name.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating Jira operations.'),
   })
   .strict();
 
@@ -32,6 +33,7 @@ const addCommentInputSchema = z
   .object({
     issueIdOrKey: z.string().min(1).describe('Jira issue ID or key.'),
     body: z.string().min(1).describe('Comment body text.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating Jira operations.'),
   })
   .strict();
 
@@ -40,6 +42,7 @@ const transitionIssueInputSchema = z
     issueIdOrKey: z.string().min(1).describe('Jira issue ID or key.'),
     transitionId: z.string().min(1).describe('Transition ID to move issue status.'),
     fields: z.record(z.string(), z.any()).optional().describe('Optional fields to set during transition.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating Jira operations.'),
   })
   .strict();
 
@@ -52,6 +55,7 @@ const updateIssueFieldsInputSchema = z
         message: 'fields must contain at least one field to update.',
       })
       .describe('Issue fields to update, e.g. assignee, custom fields.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating Jira operations.'),
   })
   .strict();
 
@@ -61,6 +65,7 @@ const workflowExecuteJiraStoryInputSchema = z
     workReport: z.string().min(1).describe('Work report comment.'),
     transitionId: z.string().min(1).describe('Transition id for Jira workflow.'),
     fieldsToUpdate: z.record(z.string(), z.any()).describe('Fields to update on issue.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating Jira operations.'),
   })
   .strict();
 
@@ -105,8 +110,9 @@ export class JiraTools implements ToolModule {
             issueType: { type: 'string', description: 'Issue type name.' },
             assignee: { type: 'string', description: 'Assignee username.' },
             priority: { type: 'string', description: 'Priority name (e.g. High).' },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
-          required: ['projectKey', 'summary', 'description', 'issueType'],
+          required: ['projectKey', 'summary', 'description', 'issueType', 'confirm'],
           additionalProperties: false,
         },
       },
@@ -118,8 +124,9 @@ export class JiraTools implements ToolModule {
           properties: {
             issueIdOrKey: { type: 'string', description: 'Jira issue id or key.' },
             body: { type: 'string', description: 'Comment text.' },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
-          required: ['issueIdOrKey', 'body'],
+          required: ['issueIdOrKey', 'body', 'confirm'],
           additionalProperties: false,
         },
       },
@@ -136,8 +143,9 @@ export class JiraTools implements ToolModule {
               description: 'Optional fields to set while transitioning e.g. custom fields.',
               additionalProperties: true,
             },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
-          required: ['issueIdOrKey', 'transitionId'],
+          required: ['issueIdOrKey', 'transitionId', 'confirm'],
           additionalProperties: false,
         },
       },
@@ -153,8 +161,9 @@ export class JiraTools implements ToolModule {
               description: 'Fields to update in issue e.g. startDate, dueDate, customfield_XXXX.',
               additionalProperties: true,
             },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
-          required: ['issueIdOrKey', 'fields'],
+          required: ['issueIdOrKey', 'fields', 'confirm'],
           additionalProperties: false,
         },
       },
@@ -172,8 +181,9 @@ export class JiraTools implements ToolModule {
               description: 'Fields map to update on issue.',
               additionalProperties: true,
             },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
-          required: ['issueIdOrKey', 'workReport', 'transitionId', 'fieldsToUpdate'],
+          required: ['issueIdOrKey', 'workReport', 'transitionId', 'fieldsToUpdate', 'confirm'],
           additionalProperties: false,
         },
       }

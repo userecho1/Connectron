@@ -28,6 +28,7 @@ const gitAddInputSchema = z
   .object({
     repoPath: z.string().optional().describe('Optional local repo path.'),
     filePattern: z.string().optional().describe('File glob pattern to add (default .).'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating git operations.'),
   })
   .strict();
 
@@ -35,6 +36,7 @@ const gitCommitInputSchema = z
   .object({
     repoPath: z.string().optional().describe('Optional local repo path.'),
     message: z.string().min(1).describe('Commit message.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating git operations.'),
   })
   .strict();
 
@@ -43,6 +45,7 @@ const gitPushInputSchema = z
     repoPath: z.string().optional().describe('Optional local repo path.'),
     remote: z.string().optional().describe('Remote name, default origin.'),
     branch: z.string().optional().describe('Branch name, default main.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating git operations.'),
   })
   .strict();
 
@@ -51,6 +54,7 @@ const gitPullInputSchema = z
     repoPath: z.string().optional().describe('Optional local repo path.'),
     remote: z.string().optional().describe('Remote name, default origin.'),
     branch: z.string().optional().describe('Branch name, default main.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating git operations.'),
   })
   .strict();
 
@@ -58,6 +62,7 @@ const gitCheckoutInputSchema = z
   .object({
     repoPath: z.string().optional().describe('Optional local repo path.'),
     branch: z.string().min(1).describe('Branch name to checkout.'),
+    confirm: z.literal(true).describe('Explicit approval required for mutating git operations.'),
   })
   .strict();
 
@@ -115,7 +120,9 @@ export class GitTools implements ToolModule {
           properties: {
             repoPath: { type: 'string', description: 'Optional local repository path.' },
             filePattern: { type: 'string', description: 'File pattern to add e.g. ".".' },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
+          required: ['confirm'],
           additionalProperties: false,
         },
       },
@@ -127,8 +134,9 @@ export class GitTools implements ToolModule {
           properties: {
             repoPath: { type: 'string', description: 'Optional local repository path.' },
             message: { type: 'string', description: 'Commit message.' },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
-          required: ['message'],
+          required: ['message', 'confirm'],
           additionalProperties: false,
         },
       },
@@ -141,7 +149,9 @@ export class GitTools implements ToolModule {
             repoPath: { type: 'string', description: 'Optional local repository path.' },
             remote: { type: 'string', description: 'Remote name.' },
             branch: { type: 'string', description: 'Branch name.' },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
+          required: ['confirm'],
           additionalProperties: false,
         },
       },
@@ -154,7 +164,9 @@ export class GitTools implements ToolModule {
             repoPath: { type: 'string', description: 'Optional local repository path.' },
             remote: { type: 'string', description: 'Remote name.' },
             branch: { type: 'string', description: 'Branch name.' },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
+          required: ['confirm'],
           additionalProperties: false,
         },
       },
@@ -166,8 +178,9 @@ export class GitTools implements ToolModule {
           properties: {
             repoPath: { type: 'string', description: 'Optional local repository path.' },
             branch: { type: 'string', description: 'Branch name.' },
+            confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm write operation.' },
           },
-          required: ['branch'],
+          required: ['branch', 'confirm'],
           additionalProperties: false,
         },
       },
