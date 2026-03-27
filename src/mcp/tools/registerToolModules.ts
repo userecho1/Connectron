@@ -36,6 +36,9 @@ import {
 import { buildGitService } from '../../infrastructure/services/GitService';
 import { GitTools } from './GitTools';
 import { ToolModule } from './ToolModule';
+import { AnalyzeJavaProjectUseCase } from '../../application/usecases/java-analysis';
+import { JavaAnalysisService } from '../../infrastructure/services/JavaAnalysisService';
+import { JavaAnalysisTools } from './JavaAnalysisTools';
 
 export function registerToolModules(): ToolModule[] {
   const modules: ToolModule[] = [];
@@ -123,6 +126,15 @@ export function registerToolModules(): ToolModule[] {
     logger.info('Git tool module enabled.');
   } catch (error) {
     logger.warn('Git tool module disabled.', { error });
+  }
+
+  try {
+    const javaAnalysisService = new JavaAnalysisService();
+    const analyzeJavaProjectUseCase = new AnalyzeJavaProjectUseCase(javaAnalysisService);
+    modules.push(new JavaAnalysisTools(analyzeJavaProjectUseCase));
+    logger.info('Java analysis tool module enabled.');
+  } catch (error) {
+    logger.warn('Java analysis tool module disabled.', { error });
   }
 
   return modules;
