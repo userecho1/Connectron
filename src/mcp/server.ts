@@ -6,7 +6,9 @@ import {
   CallToolRequestSchema, 
   ListToolsRequestSchema,
   ListPromptsRequestSchema,
-  GetPromptRequestSchema
+  GetPromptRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import express from 'express';
 import { env } from '../config/env';
@@ -14,6 +16,7 @@ import { logger } from '../utils/logger';
 import { apiKeyAuthMiddleware } from '../auth/middleware';
 import { ToolModule } from './tools/ToolModule';
 import { PromptModule } from './prompts/PromptModule';
+import { ResourceModule } from './resources/ResourceModule';
 
 export class NexusFlowServer {
   private server: Server;
@@ -24,10 +27,12 @@ export class NexusFlowServer {
   private httpTransport: StreamableHTTPServerTransport | null = null;
   private readonly toolModules: readonly ToolModule[];
   private readonly promptModules: readonly PromptModule[];
+  private readonly resourceModules: readonly ResourceModule[];
 
   constructor(
     toolModules: readonly ToolModule[] = [],
-    promptModules: readonly PromptModule[] = []
+    promptModules: readonly PromptModule[] = [],
+    resourceModules: readonly ResourceModule[] = [],
   ) {
     this.server = new Server(
       {
@@ -46,6 +51,7 @@ export class NexusFlowServer {
     this.app = express();
     this.toolModules = toolModules;
     this.promptModules = promptModules;
+    this.resourceModules = resourceModules;
     this.registerHandlers();
   }
 
@@ -109,6 +115,24 @@ export class NexusFlowServer {
         }
       }
       throw new Error(`Prompt not found: ${name}`);
+    });
+
+    // ==== Resources 注册点 ====
+    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
+      const resources = this.resourceModules.flatMap((module) => [...module.listResources()]);
+      return { resources };
+    });
+
+    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+      const { uri } = request.params;
+      for (const module of this.resourceModules) {
+        const contents = await module.readResource(uri);
+        if (contents) {
+          return { contents };
+        }
+      }
+
+      throw new Error(`Resource not found: ${uri}`);
     });
   }
 

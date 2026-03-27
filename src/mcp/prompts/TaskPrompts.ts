@@ -26,12 +26,12 @@ export class TaskPrompts implements PromptModule {
           },
           {
             name: 'issue_key',
-            description: 'Jira issue key that will be used in transitions/comments.',
+            description: 'Jira issue key (for example dqw-3878) that will be used in transitions/comments and commit prefix.',
             required: true,
           },
           {
             name: 'branch_name',
-            description: 'Git branch to use for local coding work.',
+            description: 'Git branch to use for local coding work. Must follow team format feature_<story-info>.',
             required: true,
           },
         ],
@@ -72,11 +72,14 @@ Task Description:\n${taskDescription}`,
             role: 'user',
             content: {
               type: 'text',
-              text: `Based on the task description below, produce:
+              text: `First read the resource conventions://engineering/git-jira-java and treat it as authoritative team policy.
+
+Based on the task description below, produce:
 1. A Jira operation sequence (add_jira_comment, transition_jira_issue, update_jira_issue_fields) with issue key ${issueKey}.
 2. Recommended git flow (create/switch branch, git add, git commit, git push).
-3. A standard commit message format (include issue key, summary, type).
+3. A standard commit message format (must start with issue key prefix, example: ${issueKey} feat: xxx).
 4. A GitHub PR title and description template.
+5. Validate output against the team conventions resource and explicitly list compliance checks.
 
 Task: ${taskDescription}
 Branch: ${branchName}`,
