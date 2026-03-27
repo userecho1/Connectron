@@ -13,6 +13,8 @@ const envSchema = z.object({
   DB_NAME: z.string().optional(),
   // GitHub
   GITHUB_TOKEN: z.string().optional(),
+  // Git
+  GIT_REPO_ROOT: z.string().optional(),
   // Jira
   JIRA_HOST: z.string().optional(),
   JIRA_EMAIL: z.string().optional(),

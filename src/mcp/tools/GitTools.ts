@@ -5,13 +5,13 @@ import { GetGitInfoUseCase } from '../../application/usecases/GetGitInfoUseCase.
 
 const gitStatusInputSchema = z
   .object({
-    repoPath: z.string().optional().describe('Optional path to the local git repository workspace. Defaults to process CWD.'),
+    repoPath: z.string().optional().describe('Optional path to the local git repository workspace. Falls back to GIT_REPO_ROOT when omitted.'),
   })
   .strict();
 
 const gitLogInputSchema = z
   .object({
-    repoPath: z.string().optional().describe('Optional path to the local git repository workspace. Defaults to process CWD.'),
+    repoPath: z.string().optional().describe('Optional path to the local git repository workspace. Falls back to GIT_REPO_ROOT when omitted.'),
     maxCount: z.number().int().min(1).optional().describe('Maximum number of commits to show.'),
   })
   .strict();
@@ -66,7 +66,7 @@ export class GitTools implements ToolModule {
           properties: {
             repoPath: {
               type: 'string',
-              description: 'Optional path to the local git repository workspace. Defaults to process CWD.',
+              description: 'Optional path to the local git repository workspace. Falls back to GIT_REPO_ROOT when omitted.',
             },
           },
           additionalProperties: false,
@@ -80,7 +80,7 @@ export class GitTools implements ToolModule {
           properties: {
             repoPath: {
               type: 'string',
-              description: 'Optional path to the local git repository workspace. Defaults to process CWD.',
+              description: 'Optional path to the local git repository workspace. Falls back to GIT_REPO_ROOT when omitted.',
             },
             maxCount: {
               type: 'number',
