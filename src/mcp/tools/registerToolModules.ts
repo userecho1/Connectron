@@ -8,6 +8,9 @@ import { logger } from '../../utils/logger';
 import { ListPullRequestsUseCase } from '../../application/usecases/ListPullRequestsUseCase';
 import { DatabaseTools } from './DatabaseTools';
 import { GithubTools } from './GithubTools';
+import { SearchJiraIssuesUseCase } from '../../application/usecases/SearchJiraIssuesUseCase';
+import { buildJiraServiceFromEnv } from '../../infrastructure/services/JiraService';
+import { JiraTools } from './JiraTools';
 import { ToolModule } from './ToolModule';
 
 export function registerToolModules(): ToolModule[] {
@@ -32,6 +35,17 @@ export function registerToolModules(): ToolModule[] {
     logger.info('GitHub tool module enabled.');
   } catch (error) {
     logger.warn('GitHub tool module disabled due to invalid or missing GitHub configuration.', {
+      error,
+    });
+  }
+
+  try {
+    const jiraService = buildJiraServiceFromEnv();
+    const searchJiraIssuesUseCase = new SearchJiraIssuesUseCase(jiraService);
+    modules.push(new JiraTools(searchJiraIssuesUseCase));
+    logger.info('Jira tool module enabled.');
+  } catch (error) {
+    logger.warn('Jira tool module disabled due to invalid or missing Jira configuration.', {
       error,
     });
   }
