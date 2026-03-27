@@ -6,9 +6,11 @@ import {
 import { buildGithubServiceFromEnv } from '../../infrastructure/services/GithubService';
 import { logger } from '../../utils/logger';
 import { ListPullRequestsUseCase } from '../../application/usecases/ListPullRequestsUseCase';
+import { GetFileContentUseCase } from '../../application/usecases/GetFileContentUseCase';
 import { DatabaseTools } from './DatabaseTools';
 import { GithubTools } from './GithubTools';
 import { SearchJiraIssuesUseCase } from '../../application/usecases/SearchJiraIssuesUseCase';
+import { CreateTicketUseCase } from '../../application/usecases/CreateTicketUseCase';
 import { buildJiraServiceFromEnv } from '../../infrastructure/services/JiraService';
 import { JiraTools } from './JiraTools';
 import { GetGitInfoUseCase } from '../../application/usecases/GetGitInfoUseCase';
@@ -34,7 +36,8 @@ export function registerToolModules(): ToolModule[] {
   try {
     const githubService = buildGithubServiceFromEnv();
     const listPullRequestsUseCase = new ListPullRequestsUseCase(githubService);
-    modules.push(new GithubTools(listPullRequestsUseCase));
+    const getFileContentUseCase = new GetFileContentUseCase(githubService);
+    modules.push(new GithubTools(listPullRequestsUseCase, getFileContentUseCase));
     logger.info('GitHub tool module enabled.');
   } catch (error) {
     logger.warn('GitHub tool module disabled due to invalid or missing GitHub configuration.', {
@@ -45,7 +48,8 @@ export function registerToolModules(): ToolModule[] {
   try {
     const jiraService = buildJiraServiceFromEnv();
     const searchJiraIssuesUseCase = new SearchJiraIssuesUseCase(jiraService);
-    modules.push(new JiraTools(searchJiraIssuesUseCase));
+    const createTicketUseCase = new CreateTicketUseCase(jiraService);
+    modules.push(new JiraTools(searchJiraIssuesUseCase, createTicketUseCase));
     logger.info('Jira tool module enabled.');
   } catch (error) {
     logger.warn('Jira tool module disabled due to invalid or missing Jira configuration.', {

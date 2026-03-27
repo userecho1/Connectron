@@ -31,6 +31,22 @@ export interface ListPullRequestsResult {
   perPage: number;
 }
 
+export interface GetFileContentInput {
+  owner: string;
+  repo: string;
+  path: string;
+  ref?: string;
+}
+
+export interface GetFileContentResult {
+  path: string;
+  sha: string;
+  url: string;
+  encoding: string;
+  content: string;
+}
+
 export interface GithubPullRequestReader {
   listPullRequests(input: ListPullRequestsInput): Promise<ListPullRequestsResult>;
+  getFileContent(input: GetFileContentInput): Promise<GetFileContentResult>;
 }

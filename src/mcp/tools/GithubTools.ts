@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GetFileContentUseCase } from '../../application/usecases/GetFileContentUseCase';
 import { ListPullRequestsUseCase } from '../../application/usecases/ListPullRequestsUseCase';
 import {
   PullRequestDirection,
@@ -31,7 +32,17 @@ const listPullRequestsInputSchema = z
   })
   .strict();
 
+const getFileContentInputSchema = z
+  .object({
+    owner: z.string().min(1).describe('Repository owner (organization or username).'),
+    repo: z.string().min(1).describe('Repository name.'),
+    path: z.string().min(1).describe('File path in repository.'),
+    ref: z.string().optional().describe('Branch, tag, or commit hash.'),
+  })
+  .strict();
+
 export const LIST_PULL_REQUESTS_TOOL_NAME = 'list_pull_requests' as const;
+export const GET_FILE_CONTENT_TOOL_NAME = 'get_file_content' as const;
 
 export const listPullRequestsToolDefinition = {
   name: LIST_PULL_REQUESTS_TOOL_NAME,
@@ -73,38 +84,78 @@ export const listPullRequestsToolDefinition = {
   },
 } as const;
 
+export const getFileContentToolDefinition = {
+  name: GET_FILE_CONTENT_TOOL_NAME,
+  description: 'Retrieve the content of a file in a GitHub repository.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      owner: { type: 'string', description: 'Repository owner (organization or username).' },
+      repo: { type: 'string', description: 'Repository name.' },
+      path: { type: 'string', description: 'The file path in the repository.' },
+      ref: { type: 'string', description: 'The commit/branch/tag to fetch from.', nullable: true },
+    },
+    required: ['owner', 'repo', 'path'],
+    additionalProperties: false,
+  },
+} as const;
+
 export class GithubTools implements ToolModule {
-  constructor(private readonly listPullRequestsUseCase: ListPullRequestsUseCase) {}
+  constructor(
+    private readonly listPullRequestsUseCase: ListPullRequestsUseCase,
+    private readonly getFileContentUseCase: GetFileContentUseCase,
+  ) {}
 
   public listTools() {
-    return [listPullRequestsToolDefinition];
+    return [listPullRequestsToolDefinition, getFileContentToolDefinition];
   }
 
   public async callTool(name: string, rawArgs: unknown) {
-    if (name !== LIST_PULL_REQUESTS_TOOL_NAME) {
-      return null;
+    if (name === LIST_PULL_REQUESTS_TOOL_NAME) {
+      const input = listPullRequestsInputSchema.parse(rawArgs ?? {});
+
+      const result = await this.listPullRequestsUseCase.execute({
+        owner: input.owner,
+        repo: input.repo,
+        state: input.state as PullRequestState | undefined,
+        sort: input.sort as PullRequestSort | undefined,
+        direction: input.direction as PullRequestDirection | undefined,
+        perPage: input.perPage,
+        page: input.page,
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+        structuredContent: result,
+      };
     }
 
-    const input = listPullRequestsInputSchema.parse(rawArgs ?? {});
+    if (name === GET_FILE_CONTENT_TOOL_NAME) {
+      const input = getFileContentInputSchema.parse(rawArgs ?? {});
 
-    const result = await this.listPullRequestsUseCase.execute({
-      owner: input.owner,
-      repo: input.repo,
-      state: input.state as PullRequestState | undefined,
-      sort: input.sort as PullRequestSort | undefined,
-      direction: input.direction as PullRequestDirection | undefined,
-      perPage: input.perPage,
-      page: input.page,
-    });
+      const result = await this.getFileContentUseCase.execute({
+        owner: input.owner,
+        repo: input.repo,
+        path: input.path,
+        ref: input.ref,
+      });
 
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify(result, null, 2),
-        },
-      ],
-      structuredContent: result,
-    };
+      return {
+        content: [
+          {
+            type: 'text',
+            text: result.content,
+          },
+        ],
+        structuredContent: result,
+      };
+    }
+
+    return null;
   }
 }

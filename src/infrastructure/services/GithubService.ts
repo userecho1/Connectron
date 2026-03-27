@@ -4,6 +4,8 @@ import {
   GithubPullRequestReader,
   ListPullRequestsInput,
   ListPullRequestsResult,
+  GetFileContentInput,
+  GetFileContentResult,
 } from '../../application/interfaces/GithubRepository';
 
 export class GithubService implements GithubPullRequestReader {
@@ -37,6 +39,31 @@ export class GithubService implements GithubPullRequestReader {
       totalCount: pullRequests.length,
       page: input.page ?? 1,
       perPage: input.perPage ?? 20,
+    };
+  }
+
+  public async getFileContent(input: GetFileContentInput): Promise<GetFileContentResult> {
+    const response = await this.octokit.repos.getContent({
+      owner: input.owner,
+      repo: input.repo,
+      path: input.path,
+      ref: input.ref,
+    });
+
+    if (!('content' in response.data) || !response.data.content) {
+      throw new Error(`File content not found for ${input.owner}/${input.repo}/${input.path}`);
+    }
+
+    const encoding = response.data.encoding ?? 'base64';
+    const raw = response.data.content;
+    const content = Buffer.from(raw, encoding as BufferEncoding).toString('utf-8');
+
+    return {
+      path: response.data.path ?? input.path,
+      sha: response.data.sha,
+      url: response.data.html_url ?? response.data.url ?? '',
+      encoding,
+      content,
     };
   }
 }
