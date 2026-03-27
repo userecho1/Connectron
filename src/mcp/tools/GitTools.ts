@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolModule } from './ToolModule.js';
-import { GetGitInfoUseCase } from '../../application/usecases/GetGitInfoUseCase.js';
+import { GetGitStatusUseCase } from '../../application/usecases/git/query/GetGitStatusUseCase.js';
+import { GetGitLogUseCase } from '../../application/usecases/git/query/GetGitLogUseCase.js';
+import { GitAddUseCase } from '../../application/usecases/git/command/GitAddUseCase.js';
+import { GitCommitUseCase } from '../../application/usecases/git/command/GitCommitUseCase.js';
+import { GitPushUseCase } from '../../application/usecases/git/command/GitPushUseCase.js';
+import { GitPullUseCase } from '../../application/usecases/git/command/GitPullUseCase.js';
+import { GitCheckoutUseCase } from '../../application/usecases/git/command/GitCheckoutUseCase.js';
 
 const gitStatusInputSchema = z
   .object({
@@ -54,7 +60,15 @@ const gitCheckoutInputSchema = z
   .strict();
 
 export class GitTools implements ToolModule {
-  constructor(private readonly getGitInfoUseCase: GetGitInfoUseCase) {}
+  constructor(
+    private readonly getGitStatusUseCase: GetGitStatusUseCase,
+    private readonly getGitLogUseCase: GetGitLogUseCase,
+    private readonly gitAddUseCase: GitAddUseCase,
+    private readonly gitCommitUseCase: GitCommitUseCase,
+    private readonly gitPushUseCase: GitPushUseCase,
+    private readonly gitPullUseCase: GitPullUseCase,
+    private readonly gitCheckoutUseCase: GitCheckoutUseCase,
+  ) {}
 
   listTools(): Tool[] {
     return [
@@ -162,7 +176,7 @@ export class GitTools implements ToolModule {
     try {
       if (name === 'git_status') {
       const args = gitStatusInputSchema.parse(rawArgs ?? {});
-      const result = await this.getGitInfoUseCase.getStatus({ repoPath: args.repoPath });
+      const result = await this.getGitStatusUseCase.execute({ repoPath: args.repoPath });
       return {
         content: [
           {
@@ -176,7 +190,7 @@ export class GitTools implements ToolModule {
 
     if (name === 'git_log') {
       const args = gitLogInputSchema.parse(rawArgs ?? {});
-      const result = await this.getGitInfoUseCase.getLog({ repoPath: args.repoPath, maxCount: args.maxCount });
+      const result = await this.getGitLogUseCase.execute({ repoPath: args.repoPath, maxCount: args.maxCount });
       return {
         content: [
           {
@@ -190,31 +204,31 @@ export class GitTools implements ToolModule {
 
     if (name === 'git_add') {
       const args = gitAddInputSchema.parse(rawArgs ?? {});
-      const result = await this.getGitInfoUseCase.add({ repoPath: args.repoPath, filePattern: args.filePattern });
+      const result = await this.gitAddUseCase.execute({ repoPath: args.repoPath, filePattern: args.filePattern });
       return { content: [{ type: 'text', text: result }], structuredContent: { added: true, output: result } };
     }
 
     if (name === 'git_commit') {
       const args = gitCommitInputSchema.parse(rawArgs ?? {});
-      const result = await this.getGitInfoUseCase.commit({ repoPath: args.repoPath, message: args.message });
+      const result = await this.gitCommitUseCase.execute({ repoPath: args.repoPath, message: args.message });
       return { content: [{ type: 'text', text: result }], structuredContent: { committed: true, output: result } };
     }
 
     if (name === 'git_push') {
       const args = gitPushInputSchema.parse(rawArgs ?? {});
-      const result = await this.getGitInfoUseCase.push({ repoPath: args.repoPath, remote: args.remote, branch: args.branch });
+      const result = await this.gitPushUseCase.execute({ repoPath: args.repoPath, remote: args.remote, branch: args.branch });
       return { content: [{ type: 'text', text: result }], structuredContent: { pushed: true, output: result } };
     }
 
     if (name === 'git_pull') {
       const args = gitPullInputSchema.parse(rawArgs ?? {});
-      const result = await this.getGitInfoUseCase.pull({ repoPath: args.repoPath, remote: args.remote, branch: args.branch });
+      const result = await this.gitPullUseCase.execute({ repoPath: args.repoPath, remote: args.remote, branch: args.branch });
       return { content: [{ type: 'text', text: result }], structuredContent: { pulled: true, output: result } };
     }
 
     if (name === 'git_checkout') {
       const args = gitCheckoutInputSchema.parse(rawArgs ?? {});
-      const result = await this.getGitInfoUseCase.checkout({ repoPath: args.repoPath, branch: args.branch });
+      const result = await this.gitCheckoutUseCase.execute({ repoPath: args.repoPath, branch: args.branch });
       return { content: [{ type: 'text', text: result }], structuredContent: { checkedOut: args.branch, output: result } };
     }
 

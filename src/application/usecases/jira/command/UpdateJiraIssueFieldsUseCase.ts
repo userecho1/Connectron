@@ -1,7 +1,7 @@
 import {
   JiraIssueReader,
   UpdateJiraIssueFieldsInput,
-} from '../interfaces/IJiraProvider.js';
+} from '../../../interfaces/IJiraProvider.js';
 
 export class UpdateJiraIssueFieldsUseCase {
   constructor(private readonly jiraRepository: JiraIssueReader) {}
@@ -20,3 +20,4 @@ export class UpdateJiraIssueFieldsUseCase {
     });
   }
 }
+

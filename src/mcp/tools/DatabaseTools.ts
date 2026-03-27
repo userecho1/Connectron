@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { QueryDatabaseUseCase } from '../../application/usecases/QueryDatabaseUseCase';
+import { QueryDatabaseUseCase } from '../../application/usecases/database/query/QueryDatabaseUseCase';
 import { DatabaseQueryParameters } from '../../application/interfaces/IDatabaseProvider';
 import { ToolModule } from './ToolModule';
 

@@ -1,26 +1,32 @@
-import { QueryDatabaseUseCase } from '../../application/usecases/QueryDatabaseUseCase';
+import { QueryDatabaseUseCase } from '../../application/usecases/database/query/QueryDatabaseUseCase';
 import {
   buildSqlServerConfigFromEnv,
   SqlServerClient,
 } from '../../infrastructure/database/SqlServerClient';
 import { buildGithubServiceFromEnv } from '../../infrastructure/services/GithubService';
 import { logger } from '../../utils/logger';
-import { ListPullRequestsUseCase } from '../../application/usecases/ListPullRequestsUseCase';
-import { GetFileContentUseCase } from '../../application/usecases/GetFileContentUseCase';
-import { CreateOrUpdateFileUseCase } from '../../application/usecases/CreateOrUpdateFileUseCase';
-import { CreatePullRequestUseCase } from '../../application/usecases/CreatePullRequestUseCase';
-import { MergePullRequestUseCase } from '../../application/usecases/MergePullRequestUseCase';
+import { ListPullRequestsUseCase } from '../../application/usecases/github/query/ListPullRequestsUseCase';
+import { GetFileContentUseCase } from '../../application/usecases/github/query/GetFileContentUseCase';
+import { CreateOrUpdateFileUseCase } from '../../application/usecases/github/command/CreateOrUpdateFileUseCase';
+import { CreatePullRequestUseCase } from '../../application/usecases/github/command/CreatePullRequestUseCase';
+import { MergePullRequestUseCase } from '../../application/usecases/github/command/MergePullRequestUseCase';
 import { DatabaseTools } from './DatabaseTools';
 import { GithubTools } from './GithubTools';
-import { SearchJiraIssuesUseCase } from '../../application/usecases/SearchJiraIssuesUseCase';
-import { CreateTicketUseCase } from '../../application/usecases/CreateTicketUseCase';
-import { AddJiraCommentUseCase } from '../../application/usecases/AddJiraCommentUseCase';
-import { TransitionJiraIssueUseCase } from '../../application/usecases/TransitionJiraIssueUseCase';
-import { UpdateJiraIssueFieldsUseCase } from '../../application/usecases/UpdateJiraIssueFieldsUseCase';
-import { WorkflowExecuteJiraStoryUseCase } from '../../application/usecases/WorkflowExecuteJiraStoryUseCase';
+import { SearchJiraIssuesUseCase } from '../../application/usecases/jira/query/SearchJiraIssuesUseCase';
+import { CreateTicketUseCase } from '../../application/usecases/jira/command/CreateTicketUseCase';
+import { AddJiraCommentUseCase } from '../../application/usecases/jira/command/AddJiraCommentUseCase';
+import { TransitionJiraIssueUseCase } from '../../application/usecases/jira/command/TransitionJiraIssueUseCase';
+import { UpdateJiraIssueFieldsUseCase } from '../../application/usecases/jira/command/UpdateJiraIssueFieldsUseCase';
+import { WorkflowExecuteJiraStoryUseCase } from '../../application/usecases/workflow/WorkflowExecuteJiraStoryUseCase';
 import { buildJiraServiceFromEnv } from '../../infrastructure/services/JiraService';
 import { JiraTools } from './JiraTools';
-import { GetGitInfoUseCase } from '../../application/usecases/GetGitInfoUseCase';
+import { GetGitStatusUseCase } from '../../application/usecases/git/query/GetGitStatusUseCase';
+import { GetGitLogUseCase } from '../../application/usecases/git/query/GetGitLogUseCase';
+import { GitAddUseCase } from '../../application/usecases/git/command/GitAddUseCase';
+import { GitCommitUseCase } from '../../application/usecases/git/command/GitCommitUseCase';
+import { GitPushUseCase } from '../../application/usecases/git/command/GitPushUseCase';
+import { GitPullUseCase } from '../../application/usecases/git/command/GitPullUseCase';
+import { GitCheckoutUseCase } from '../../application/usecases/git/command/GitCheckoutUseCase';
 import { buildGitService } from '../../infrastructure/services/GitService';
 import { GitTools } from './GitTools';
 import { ToolModule } from './ToolModule';
@@ -90,8 +96,24 @@ export function registerToolModules(): ToolModule[] {
 
   try {
     const gitService = buildGitService();
-    const getGitInfoUseCase = new GetGitInfoUseCase(gitService);
-    modules.push(new GitTools(getGitInfoUseCase));
+    const getGitStatusUseCase = new GetGitStatusUseCase(gitService);
+    const getGitLogUseCase = new GetGitLogUseCase(gitService);
+    const gitAddUseCase = new GitAddUseCase(gitService);
+    const gitCommitUseCase = new GitCommitUseCase(gitService);
+    const gitPushUseCase = new GitPushUseCase(gitService);
+    const gitPullUseCase = new GitPullUseCase(gitService);
+    const gitCheckoutUseCase = new GitCheckoutUseCase(gitService);
+    modules.push(
+      new GitTools(
+        getGitStatusUseCase,
+        getGitLogUseCase,
+        gitAddUseCase,
+        gitCommitUseCase,
+        gitPushUseCase,
+        gitPullUseCase,
+        gitCheckoutUseCase,
+      ),
+    );
     logger.info('Git tool module enabled.');
   } catch (error) {
     logger.warn('Git tool module disabled.', { error });

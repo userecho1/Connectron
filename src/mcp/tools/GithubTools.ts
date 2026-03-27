@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { GetFileContentUseCase } from '../../application/usecases/GetFileContentUseCase';
-import { ListPullRequestsUseCase } from '../../application/usecases/ListPullRequestsUseCase';
-import { CreateOrUpdateFileUseCase } from '../../application/usecases/CreateOrUpdateFileUseCase';
-import { CreatePullRequestUseCase } from '../../application/usecases/CreatePullRequestUseCase';
-import { MergePullRequestUseCase } from '../../application/usecases/MergePullRequestUseCase';
+import { GetFileContentUseCase } from '../../application/usecases/github/query/GetFileContentUseCase';
+import { ListPullRequestsUseCase } from '../../application/usecases/github/query/ListPullRequestsUseCase';
+import { CreateOrUpdateFileUseCase } from '../../application/usecases/github/command/CreateOrUpdateFileUseCase';
+import { CreatePullRequestUseCase } from '../../application/usecases/github/command/CreatePullRequestUseCase';
+import { MergePullRequestUseCase } from '../../application/usecases/github/command/MergePullRequestUseCase';
 import {
   PullRequestDirection,
   PullRequestSort,

@@ -1,7 +1,7 @@
 import {
   JiraIssueReader,
   TransitionJiraIssueInput,
-} from '../interfaces/IJiraProvider.js';
+} from '../../../interfaces/IJiraProvider.js';
 
 export class TransitionJiraIssueUseCase {
   constructor(private readonly jiraRepository: JiraIssueReader) {}
@@ -21,3 +21,4 @@ export class TransitionJiraIssueUseCase {
     });
   }
 }
+

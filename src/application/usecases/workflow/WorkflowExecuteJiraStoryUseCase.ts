@@ -3,7 +3,7 @@ import {
   AddJiraCommentInput,
   TransitionJiraIssueInput,
   UpdateJiraIssueFieldsInput,
-} from '../interfaces/IJiraProvider.js';
+} from '../../interfaces/IJiraProvider.js';
 
 export interface WorkflowExecuteJiraStoryInput {
   issueIdOrKey: string;
@@ -55,3 +55,4 @@ export class WorkflowExecuteJiraStoryUseCase {
     };
   }
 }
+

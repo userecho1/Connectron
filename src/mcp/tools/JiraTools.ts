@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolModule } from './ToolModule.js';
-import { SearchJiraIssuesUseCase } from '../../application/usecases/SearchJiraIssuesUseCase.js';
-import { CreateTicketUseCase } from '../../application/usecases/CreateTicketUseCase.js';
-import { AddJiraCommentUseCase } from '../../application/usecases/AddJiraCommentUseCase.js';
-import { TransitionJiraIssueUseCase } from '../../application/usecases/TransitionJiraIssueUseCase.js';
-import { UpdateJiraIssueFieldsUseCase } from '../../application/usecases/UpdateJiraIssueFieldsUseCase.js';
-import { WorkflowExecuteJiraStoryUseCase } from '../../application/usecases/WorkflowExecuteJiraStoryUseCase.js';
+import { SearchJiraIssuesUseCase } from '../../application/usecases/jira/query/SearchJiraIssuesUseCase.js';
+import { CreateTicketUseCase } from '../../application/usecases/jira/command/CreateTicketUseCase.js';
+import { AddJiraCommentUseCase } from '../../application/usecases/jira/command/AddJiraCommentUseCase.js';
+import { TransitionJiraIssueUseCase } from '../../application/usecases/jira/command/TransitionJiraIssueUseCase.js';
+import { UpdateJiraIssueFieldsUseCase } from '../../application/usecases/jira/command/UpdateJiraIssueFieldsUseCase.js';
+import { WorkflowExecuteJiraStoryUseCase } from '../../application/usecases/workflow/WorkflowExecuteJiraStoryUseCase.js';
 
 const searchJiraIssuesInputSchema = z
   .object({
