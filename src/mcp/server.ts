@@ -2,12 +2,18 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { 
+  CallToolRequestSchema, 
+  ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema
+} from '@modelcontextprotocol/sdk/types.js';
 import express from 'express';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 import { apiKeyAuthMiddleware } from '../auth/middleware';
 import { ToolModule } from './tools/ToolModule';
+import { PromptModule } from './prompts/PromptModule';
 
 export class NexusFlowServer {
   private server: Server;
@@ -17,8 +23,12 @@ export class NexusFlowServer {
   private sseTransport: SSEServerTransport | null = null;
   private httpTransport: StreamableHTTPServerTransport | null = null;
   private readonly toolModules: readonly ToolModule[];
+  private readonly promptModules: readonly PromptModule[];
 
-  constructor(toolModules: readonly ToolModule[] = []) {
+  constructor(
+    toolModules: readonly ToolModule[] = [],
+    promptModules: readonly PromptModule[] = []
+  ) {
     this.server = new Server(
       {
         name: 'NexusFlow',
@@ -35,6 +45,7 @@ export class NexusFlowServer {
 
     this.app = express();
     this.toolModules = toolModules;
+    this.promptModules = promptModules;
     this.registerHandlers();
   }
 
@@ -81,6 +92,23 @@ export class NexusFlowServer {
           ],
         };
       }
+    });
+
+    // ==== Prompts 注册点 ====
+    this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
+      const prompts = this.promptModules.flatMap((module) => [...module.listPrompts()]);
+      return { prompts };
+    });
+
+    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+      const { name, arguments: args } = request.params;
+      for (const module of this.promptModules) {
+        const result = await module.getPrompt(name, args);
+        if (result) {
+          return result as any;
+        }
+      }
+      throw new Error(`Prompt not found: ${name}`);
     });
   }
 
