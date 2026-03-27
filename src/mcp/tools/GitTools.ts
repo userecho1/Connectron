@@ -1,13 +1,15 @@
 import { z } from 'zod';
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolModule } from './ToolModule.js';
-import { GetGitStatusUseCase } from '../../application/usecases/git/query/GetGitStatusUseCase.js';
-import { GetGitLogUseCase } from '../../application/usecases/git/query/GetGitLogUseCase.js';
-import { GitAddUseCase } from '../../application/usecases/git/command/GitAddUseCase.js';
-import { GitCommitUseCase } from '../../application/usecases/git/command/GitCommitUseCase.js';
-import { GitPushUseCase } from '../../application/usecases/git/command/GitPushUseCase.js';
-import { GitPullUseCase } from '../../application/usecases/git/command/GitPullUseCase.js';
-import { GitCheckoutUseCase } from '../../application/usecases/git/command/GitCheckoutUseCase.js';
+import {
+  GetGitStatusUseCase,
+  GetGitLogUseCase,
+  GitAddUseCase,
+  GitCommitUseCase,
+  GitPushUseCase,
+  GitPullUseCase,
+  GitCheckoutUseCase,
+} from '../../application/usecases/git/index.js';
 
 const gitStatusInputSchema = z
   .object({

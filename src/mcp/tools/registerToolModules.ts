@@ -1,32 +1,38 @@
-import { QueryDatabaseUseCase } from '../../application/usecases/database/query/QueryDatabaseUseCase';
+import { QueryDatabaseUseCase } from '../../application/usecases/database';
 import {
   buildSqlServerConfigFromEnv,
   SqlServerClient,
 } from '../../infrastructure/database/SqlServerClient';
 import { buildGithubServiceFromEnv } from '../../infrastructure/services/GithubService';
 import { logger } from '../../utils/logger';
-import { ListPullRequestsUseCase } from '../../application/usecases/github/query/ListPullRequestsUseCase';
-import { GetFileContentUseCase } from '../../application/usecases/github/query/GetFileContentUseCase';
-import { CreateOrUpdateFileUseCase } from '../../application/usecases/github/command/CreateOrUpdateFileUseCase';
-import { CreatePullRequestUseCase } from '../../application/usecases/github/command/CreatePullRequestUseCase';
-import { MergePullRequestUseCase } from '../../application/usecases/github/command/MergePullRequestUseCase';
+import {
+  ListPullRequestsUseCase,
+  GetFileContentUseCase,
+  CreateOrUpdateFileUseCase,
+  CreatePullRequestUseCase,
+  MergePullRequestUseCase,
+} from '../../application/usecases/github';
 import { DatabaseTools } from './DatabaseTools';
 import { GithubTools } from './GithubTools';
-import { SearchJiraIssuesUseCase } from '../../application/usecases/jira/query/SearchJiraIssuesUseCase';
-import { CreateTicketUseCase } from '../../application/usecases/jira/command/CreateTicketUseCase';
-import { AddJiraCommentUseCase } from '../../application/usecases/jira/command/AddJiraCommentUseCase';
-import { TransitionJiraIssueUseCase } from '../../application/usecases/jira/command/TransitionJiraIssueUseCase';
-import { UpdateJiraIssueFieldsUseCase } from '../../application/usecases/jira/command/UpdateJiraIssueFieldsUseCase';
-import { WorkflowExecuteJiraStoryUseCase } from '../../application/usecases/workflow/WorkflowExecuteJiraStoryUseCase';
+import {
+  SearchJiraIssuesUseCase,
+  CreateTicketUseCase,
+  AddJiraCommentUseCase,
+  TransitionJiraIssueUseCase,
+  UpdateJiraIssueFieldsUseCase,
+} from '../../application/usecases/jira';
+import { WorkflowExecuteJiraStoryUseCase } from '../../application/usecases/workflow';
 import { buildJiraServiceFromEnv } from '../../infrastructure/services/JiraService';
 import { JiraTools } from './JiraTools';
-import { GetGitStatusUseCase } from '../../application/usecases/git/query/GetGitStatusUseCase';
-import { GetGitLogUseCase } from '../../application/usecases/git/query/GetGitLogUseCase';
-import { GitAddUseCase } from '../../application/usecases/git/command/GitAddUseCase';
-import { GitCommitUseCase } from '../../application/usecases/git/command/GitCommitUseCase';
-import { GitPushUseCase } from '../../application/usecases/git/command/GitPushUseCase';
-import { GitPullUseCase } from '../../application/usecases/git/command/GitPullUseCase';
-import { GitCheckoutUseCase } from '../../application/usecases/git/command/GitCheckoutUseCase';
+import {
+  GetGitStatusUseCase,
+  GetGitLogUseCase,
+  GitAddUseCase,
+  GitCommitUseCase,
+  GitPushUseCase,
+  GitPullUseCase,
+  GitCheckoutUseCase,
+} from '../../application/usecases/git';
 import { buildGitService } from '../../infrastructure/services/GitService';
 import { GitTools } from './GitTools';
 import { ToolModule } from './ToolModule';
