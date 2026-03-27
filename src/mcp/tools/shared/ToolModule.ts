@@ -1,4 +1,6 @@
+import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
+
 export interface ToolModule {
-  listTools(): readonly unknown[];
-  callTool(name: string, rawArgs: unknown): Promise<unknown | null>;
+  listTools(): ReadonlyArray<Tool>;
+  callTool(name: string, rawArgs: unknown): Promise<CallToolResult | null>;
 }

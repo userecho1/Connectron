@@ -114,7 +114,7 @@ export class NexusFlowServer {
       for (const module of this.promptModules) {
         const result = await module.getPrompt(name, args);
         if (result) {
-          return result as any;
+          return result;
         }
       }
       throw new Error(`Prompt not found: ${name}`);

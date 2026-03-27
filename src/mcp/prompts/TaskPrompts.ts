@@ -1,4 +1,4 @@
-import { Prompt } from '@modelcontextprotocol/sdk/types.js';
+import { GetPromptResult, Prompt } from '@modelcontextprotocol/sdk/types.js';
 import { PromptModule } from './PromptModule.js';
 
 export class TaskPrompts implements PromptModule {
@@ -39,7 +39,7 @@ export class TaskPrompts implements PromptModule {
     ];
   }
 
-  async getPrompt(name: string, args: Record<string, string> | undefined): Promise<unknown | null> {
+  async getPrompt(name: string, args: Record<string, string> | undefined): Promise<GetPromptResult | null> {
     if (name === 'analyze_task') {
       const taskDescription = args?.task_description ?? '';
       return {

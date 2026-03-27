@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolModule } from '../shared/ToolModule.js';
 import { ExtractCapabilitiesUseCase } from '../../../application/usecases/capability-extractor/index.js';
 
@@ -66,7 +66,7 @@ export class CapabilityExtractionTools implements ToolModule {
     ];
   }
 
-  async callTool(name: string, rawArgs: unknown): Promise<unknown | null> {
+  async callTool(name: string, rawArgs: unknown): Promise<CallToolResult | null> {
     if (name !== EXTRACT_CAPABILITIES_TOOL_NAME) {
       return null;
     }

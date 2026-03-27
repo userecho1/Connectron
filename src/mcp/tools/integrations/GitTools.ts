@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolModule } from '../shared/ToolModule.js';
 import {
   GetGitStatusUseCase,
@@ -187,7 +187,7 @@ export class GitTools implements ToolModule {
     ];
   }
 
-  async callTool(name: string, rawArgs: unknown): Promise<unknown | null> {
+  async callTool(name: string, rawArgs: unknown): Promise<CallToolResult | null> {
     try {
       if (name === 'git_status') {
       const args = gitStatusInputSchema.parse(rawArgs ?? {});
@@ -199,7 +199,7 @@ export class GitTools implements ToolModule {
             text: result.output,
           },
         ],
-        structuredContent: result,
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     }
 

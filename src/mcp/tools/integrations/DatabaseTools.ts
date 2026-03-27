@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { QueryDatabaseUseCase } from '../../../application/usecases/database';
 import { DatabaseQueryParameters } from '../../../application/interfaces';
 import { ToolModule } from '../shared/ToolModule';
@@ -15,7 +16,7 @@ const queryDatabaseInputSchema = z
 
 export const QUERY_DATABASE_TOOL_NAME = 'query_database' as const;
 
-export const queryDatabaseToolDefinition = {
+export const queryDatabaseToolDefinition: Tool = {
   name: QUERY_DATABASE_TOOL_NAME,
   description: 'Execute a SQL Server query and return structured JSON rows.',
   inputSchema: {
@@ -41,16 +42,16 @@ export const queryDatabaseToolDefinition = {
     required: ['sql'],
     additionalProperties: false,
   },
-} as const;
+};
 
 export class DatabaseTools implements ToolModule {
   constructor(private readonly queryDatabaseUseCase: QueryDatabaseUseCase) {}
 
-  public listTools() {
+  public listTools(): readonly Tool[] {
     return [queryDatabaseToolDefinition];
   }
 
-  public async callTool(name: string, rawArgs: unknown) {
+  public async callTool(name: string, rawArgs: unknown): Promise<CallToolResult | null> {
     if (name !== QUERY_DATABASE_TOOL_NAME) {
       return null;
     }

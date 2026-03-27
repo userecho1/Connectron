@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolModule } from '../shared/ToolModule.js';
 import { GenerateMcpToolUseCase } from '../../../application/usecases/tool-generator/index.js';
 
@@ -50,7 +50,7 @@ export class ToolGeneratorTools implements ToolModule {
     ];
   }
 
-  async callTool(name: string, rawArgs: unknown): Promise<unknown | null> {
+  async callTool(name: string, rawArgs: unknown): Promise<CallToolResult | null> {
     if (name !== GENERATE_MCP_TOOL_TOOL_NAME) {
       return null;
     }

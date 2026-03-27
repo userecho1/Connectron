@@ -1,4 +1,4 @@
-import { Prompt } from '@modelcontextprotocol/sdk/types.js';
+import { GetPromptResult, Prompt } from '@modelcontextprotocol/sdk/types.js';
 import { PromptModule } from './PromptModule.js';
 
 export class DeveloperPrompts implements PromptModule {
@@ -34,7 +34,7 @@ export class DeveloperPrompts implements PromptModule {
     ];
   }
 
-  async getPrompt(name: string, args: Record<string, string> | undefined): Promise<unknown | null> {
+  async getPrompt(name: string, args: Record<string, string> | undefined): Promise<GetPromptResult | null> {
     switch (name) {
       case 'code_review': {
         const context = args?.code_context || '';

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolModule } from '../shared/ToolModule.js';
 import { WorkflowExecuteMonolithEvolutionUseCase } from '../../../application/usecases/workflow/index.js';
 
@@ -46,7 +46,7 @@ export class WorkflowEvolutionTools implements ToolModule {
     ];
   }
 
-  async callTool(name: string, rawArgs: unknown): Promise<unknown | null> {
+  async callTool(name: string, rawArgs: unknown): Promise<CallToolResult | null> {
     if (name !== WORKFLOW_EXECUTE_MONOLITH_EVOLUTION_TOOL_NAME) {
       return null;
     }

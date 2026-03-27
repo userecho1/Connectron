@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolModule } from '../shared/ToolModule.js';
 import {
   SearchJiraIssuesUseCase,
@@ -190,7 +190,7 @@ export class JiraTools implements ToolModule {
     ];
   }
 
-  async callTool(name: string, rawArgs: unknown): Promise<unknown | null> {
+  async callTool(name: string, rawArgs: unknown): Promise<CallToolResult | null> {
     try {
       if (name === 'search_jira_issues') {
       const args = searchJiraIssuesInputSchema.parse(rawArgs ?? {});
@@ -207,7 +207,7 @@ export class JiraTools implements ToolModule {
             text: JSON.stringify(issues, null, 2),
           },
         ],
-        structuredContent: issues,
+        structuredContent: { issues },
       };
     }
 
@@ -230,7 +230,7 @@ export class JiraTools implements ToolModule {
             text: JSON.stringify(result, null, 2),
           },
         ],
-        structuredContent: result,
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     }
 
@@ -249,7 +249,7 @@ export class JiraTools implements ToolModule {
             text: 'Comment added successfully',
           },
         ],
-        structuredContent: result,
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     }
 
@@ -309,7 +309,7 @@ export class JiraTools implements ToolModule {
             text: `Workflow executed for issue ${args.issueIdOrKey}. comment=${result.commentId}, transitioned=${result.transitioned}.`,
           },
         ],
-        structuredContent: result,
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     }
 

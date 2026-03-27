@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import {
   GetFileContentUseCase,
   ListPullRequestsUseCase,
@@ -49,7 +50,7 @@ const getFileContentInputSchema = z
 export const LIST_PULL_REQUESTS_TOOL_NAME = 'list_pull_requests' as const;
 export const GET_FILE_CONTENT_TOOL_NAME = 'get_file_content' as const;
 
-export const listPullRequestsToolDefinition = {
+export const listPullRequestsToolDefinition: Tool = {
   name: LIST_PULL_REQUESTS_TOOL_NAME,
   description: 'List pull requests in a GitHub repository with filters and pagination.',
   inputSchema: {
@@ -87,9 +88,9 @@ export const listPullRequestsToolDefinition = {
     required: ['owner', 'repo'],
     additionalProperties: false,
   },
-} as const;
+};
 
-export const getFileContentToolDefinition = {
+export const getFileContentToolDefinition: Tool = {
   name: GET_FILE_CONTENT_TOOL_NAME,
   description: 'Retrieve the content of a file in a GitHub repository.',
   inputSchema: {
@@ -103,7 +104,7 @@ export const getFileContentToolDefinition = {
     required: ['owner', 'repo', 'path'],
     additionalProperties: false,
   },
-} as const;
+};
 
 export const CREATE_OR_UPDATE_FILE_TOOL_NAME = 'create_or_update_file' as const;
 export const CREATE_PULL_REQUEST_TOOL_NAME = 'create_pull_request' as const;
@@ -158,7 +159,7 @@ export class GithubTools implements ToolModule {
     private readonly mergePullRequestUseCase: MergePullRequestUseCase,
   ) {}
 
-  public listTools() {
+  public listTools(): readonly Tool[] {
     return [
       listPullRequestsToolDefinition,
       getFileContentToolDefinition,
@@ -220,7 +221,7 @@ export class GithubTools implements ToolModule {
     ];
   }
 
-  public async callTool(name: string, rawArgs: unknown) {
+  public async callTool(name: string, rawArgs: unknown): Promise<CallToolResult | null> {
     try {
       if (name === LIST_PULL_REQUESTS_TOOL_NAME) {
       const input = listPullRequestsInputSchema.parse(rawArgs ?? {});
@@ -242,7 +243,7 @@ export class GithubTools implements ToolModule {
             text: JSON.stringify(result, null, 2),
           },
         ],
-        structuredContent: result,
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     }
 
@@ -263,7 +264,7 @@ export class GithubTools implements ToolModule {
             text: result.content,
           },
         ],
-        structuredContent: result,
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     }
 
@@ -281,7 +282,7 @@ export class GithubTools implements ToolModule {
 
       return {
         content: [{ type: 'text', text: `File ${input.path} upserted with sha ${result.content.sha}` }],
-        structuredContent: result,
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     }
 
@@ -298,7 +299,7 @@ export class GithubTools implements ToolModule {
 
       return {
         content: [{ type: 'text', text: `PR created: ${result.url}` }],
-        structuredContent: result,
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     }
 
@@ -315,7 +316,7 @@ export class GithubTools implements ToolModule {
 
       return {
         content: [{ type: 'text', text: `PR merged: ${result.sha}, merged=${result.merged}` }],
-        structuredContent: result,
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     }
 

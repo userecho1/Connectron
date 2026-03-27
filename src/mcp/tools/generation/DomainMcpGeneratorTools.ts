@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolModule } from '../shared/ToolModule.js';
 import { GenerateDomainMcpServersUseCase } from '../../../application/usecases/domain-mcp-generator/index.js';
 
@@ -89,7 +89,7 @@ export class DomainMcpGeneratorTools implements ToolModule {
     ];
   }
 
-  async callTool(name: string, rawArgs: unknown): Promise<unknown | null> {
+  async callTool(name: string, rawArgs: unknown): Promise<CallToolResult | null> {
     if (name !== DOMAIN_MCP_GENERATOR_TOOL_NAME) {
       return null;
     }

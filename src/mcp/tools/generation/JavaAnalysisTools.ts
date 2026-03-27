@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { AnalyzeJavaProjectUseCase } from '../../../application/usecases/java-analysis/index.js';
 import { ToolModule } from '../shared/ToolModule.js';
 
@@ -54,7 +54,7 @@ export class JavaAnalysisTools implements ToolModule {
     ];
   }
 
-  async callTool(name: string, rawArgs: unknown): Promise<unknown | null> {
+  async callTool(name: string, rawArgs: unknown): Promise<CallToolResult | null> {
     if (name !== ANALYZE_JAVA_PROJECT_TOOL_NAME) {
       return null;
     }
