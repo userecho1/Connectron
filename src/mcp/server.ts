@@ -7,6 +7,7 @@ import express from 'express';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 import { apiKeyAuthMiddleware } from '../auth/middleware';
+import { ToolModule } from './tools/ToolModule';
 
 export class NexusFlowServer {
   private server: Server;
@@ -15,8 +16,9 @@ export class NexusFlowServer {
   // 保存 SSE transport 的引用
   private sseTransport: SSEServerTransport | null = null;
   private httpTransport: StreamableHTTPServerTransport | null = null;
+  private readonly toolModules: readonly ToolModule[];
 
-  constructor() {
+  constructor(toolModules: readonly ToolModule[] = []) {
     this.server = new Server(
       {
         name: 'NexusFlow',
@@ -32,16 +34,17 @@ export class NexusFlowServer {
     );
 
     this.app = express();
+    this.toolModules = toolModules;
     this.registerHandlers();
   }
 
   private registerHandlers() {
     // ==== 工具与 Prompts 注册点 ====
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+      const tools = this.toolModules.flatMap((module) => [...module.listTools()]);
+
       return {
-        tools: [
-          // TODO: 下一步将在这里由 DI 容器注入各类 Tools
-        ],
+        tools,
       };
     });
 
@@ -49,8 +52,35 @@ export class NexusFlowServer {
       const { name, arguments: args } = request.params;
       logger.info(`Tool executed: ${name}`, args);
 
-      // TODO: 路由到对应的 UseCase
-      throw new Error(`Unknown tool: ${name}`);
+      try {
+        for (const module of this.toolModules) {
+          const toolResult = await module.callTool(name, args);
+          if (toolResult) {
+            return toolResult;
+          }
+        }
+
+        return {
+          isError: true,
+          content: [
+            {
+              type: 'text',
+              text: `Unknown tool: ${name}`,
+            },
+          ],
+        };
+      } catch (error) {
+        logger.error('Tool execution failed', error, { toolName: name });
+        return {
+          isError: true,
+          content: [
+            {
+              type: 'text',
+              text: error instanceof Error ? error.message : 'Tool execution failed',
+            },
+          ],
+        };
+      }
     });
   }
 
