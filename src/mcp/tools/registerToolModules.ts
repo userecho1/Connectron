@@ -45,6 +45,9 @@ import { CapabilityExtractionTools } from './CapabilityExtractionTools';
 import { GenerateMcpToolUseCase } from '../../application/usecases/tool-generator';
 import { ToolGenerationService } from '../../infrastructure/services/ToolGenerationService';
 import { ToolGeneratorTools } from './ToolGeneratorTools';
+import { GenerateDomainMcpServersUseCase } from '../../application/usecases/domain-mcp-generator';
+import { DomainMcpGenerationService } from '../../infrastructure/services/DomainMcpGenerationService';
+import { DomainMcpGeneratorTools } from './DomainMcpGeneratorTools';
 
 export function registerToolModules(): ToolModule[] {
   const modules: ToolModule[] = [];
@@ -159,6 +162,15 @@ export function registerToolModules(): ToolModule[] {
     logger.info('Tool generator module enabled.');
   } catch (error) {
     logger.warn('Tool generator module disabled.', { error });
+  }
+
+  try {
+    const domainMcpGenerationService = new DomainMcpGenerationService();
+    const generateDomainMcpServersUseCase = new GenerateDomainMcpServersUseCase(domainMcpGenerationService);
+    modules.push(new DomainMcpGeneratorTools(generateDomainMcpServersUseCase));
+    logger.info('Domain MCP generator module enabled.');
+  } catch (error) {
+    logger.warn('Domain MCP generator module disabled.', { error });
   }
 
   return modules;
