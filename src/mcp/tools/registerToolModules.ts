@@ -39,6 +39,9 @@ import { ToolModule } from './ToolModule';
 import { AnalyzeJavaProjectUseCase } from '../../application/usecases/java-analysis';
 import { JavaAnalysisService } from '../../infrastructure/services/JavaAnalysisService';
 import { JavaAnalysisTools } from './JavaAnalysisTools';
+import { ExtractCapabilitiesUseCase } from '../../application/usecases/capability-extractor';
+import { CapabilityExtractionService } from '../../infrastructure/services/CapabilityExtractionService';
+import { CapabilityExtractionTools } from './CapabilityExtractionTools';
 
 export function registerToolModules(): ToolModule[] {
   const modules: ToolModule[] = [];
@@ -135,6 +138,15 @@ export function registerToolModules(): ToolModule[] {
     logger.info('Java analysis tool module enabled.');
   } catch (error) {
     logger.warn('Java analysis tool module disabled.', { error });
+  }
+
+  try {
+    const capabilityExtractionService = new CapabilityExtractionService();
+    const extractCapabilitiesUseCase = new ExtractCapabilitiesUseCase(capabilityExtractionService);
+    modules.push(new CapabilityExtractionTools(extractCapabilitiesUseCase));
+    logger.info('Capability extraction tool module enabled.');
+  } catch (error) {
+    logger.warn('Capability extraction tool module disabled.', { error });
   }
 
   return modules;
