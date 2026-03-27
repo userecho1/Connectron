@@ -42,6 +42,9 @@ import { JavaAnalysisTools } from './JavaAnalysisTools';
 import { ExtractCapabilitiesUseCase } from '../../application/usecases/capability-extractor';
 import { CapabilityExtractionService } from '../../infrastructure/services/CapabilityExtractionService';
 import { CapabilityExtractionTools } from './CapabilityExtractionTools';
+import { GenerateMcpToolUseCase } from '../../application/usecases/tool-generator';
+import { ToolGenerationService } from '../../infrastructure/services/ToolGenerationService';
+import { ToolGeneratorTools } from './ToolGeneratorTools';
 
 export function registerToolModules(): ToolModule[] {
   const modules: ToolModule[] = [];
@@ -147,6 +150,15 @@ export function registerToolModules(): ToolModule[] {
     logger.info('Capability extraction tool module enabled.');
   } catch (error) {
     logger.warn('Capability extraction tool module disabled.', { error });
+  }
+
+  try {
+    const toolGenerationService = new ToolGenerationService();
+    const generateMcpToolUseCase = new GenerateMcpToolUseCase(toolGenerationService);
+    modules.push(new ToolGeneratorTools(generateMcpToolUseCase));
+    logger.info('Tool generator module enabled.');
+  } catch (error) {
+    logger.warn('Tool generator module disabled.', { error });
   }
 
   return modules;
