@@ -11,6 +11,9 @@ import { GithubTools } from './GithubTools';
 import { SearchJiraIssuesUseCase } from '../../application/usecases/SearchJiraIssuesUseCase';
 import { buildJiraServiceFromEnv } from '../../infrastructure/services/JiraService';
 import { JiraTools } from './JiraTools';
+import { GetGitInfoUseCase } from '../../application/usecases/GetGitInfoUseCase';
+import { buildGitService } from '../../infrastructure/services/GitService';
+import { GitTools } from './GitTools';
 import { ToolModule } from './ToolModule';
 
 export function registerToolModules(): ToolModule[] {
@@ -48,6 +51,15 @@ export function registerToolModules(): ToolModule[] {
     logger.warn('Jira tool module disabled due to invalid or missing Jira configuration.', {
       error,
     });
+  }
+
+  try {
+    const gitService = buildGitService();
+    const getGitInfoUseCase = new GetGitInfoUseCase(gitService);
+    modules.push(new GitTools(getGitInfoUseCase));
+    logger.info('Git tool module enabled.');
+  } catch (error) {
+    logger.warn('Git tool module disabled.', { error });
   }
 
   return modules;
