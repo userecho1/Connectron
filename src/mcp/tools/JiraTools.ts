@@ -3,6 +3,9 @@ import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolModule } from './ToolModule.js';
 import { SearchJiraIssuesUseCase } from '../../application/usecases/SearchJiraIssuesUseCase.js';
 import { CreateTicketUseCase } from '../../application/usecases/CreateTicketUseCase.js';
+import { AddJiraCommentUseCase } from '../../application/usecases/AddJiraCommentUseCase.js';
+import { TransitionJiraIssueUseCase } from '../../application/usecases/TransitionJiraIssueUseCase.js';
+import { UpdateJiraIssueFieldsUseCase } from '../../application/usecases/UpdateJiraIssueFieldsUseCase.js';
 
 const searchJiraIssuesInputSchema = z
   .object({
@@ -22,10 +25,40 @@ const createTicketInputSchema = z
   })
   .strict();
 
+const addCommentInputSchema = z
+  .object({
+    issueIdOrKey: z.string().min(1).describe('Jira issue ID or key.'),
+    body: z.string().min(1).describe('Comment body text.'),
+  })
+  .strict();
+
+const transitionIssueInputSchema = z
+  .object({
+    issueIdOrKey: z.string().min(1).describe('Jira issue ID or key.'),
+    transitionId: z.string().min(1).describe('Transition ID to move issue status.'),
+    fields: z.record(z.string(), z.any()).optional().describe('Optional fields to set during transition.'),
+  })
+  .strict();
+
+const updateIssueFieldsInputSchema = z
+  .object({
+    issueIdOrKey: z.string().min(1).describe('Jira issue ID or key.'),
+    fields: z
+      .record(z.string(), z.any())
+      .refine((v) => Object.keys(v).length > 0, {
+        message: 'fields must contain at least one field to update.',
+      })
+      .describe('Issue fields to update, e.g. assignee, custom fields.'),
+  })
+  .strict();
+
 export class JiraTools implements ToolModule {
   constructor(
     private readonly searchJiraIssuesUseCase: SearchJiraIssuesUseCase,
     private readonly createTicketUseCase: CreateTicketUseCase,
+    private readonly addJiraCommentUseCase: AddJiraCommentUseCase,
+    private readonly transitionJiraIssueUseCase: TransitionJiraIssueUseCase,
+    private readonly updateJiraIssueFieldsUseCase: UpdateJiraIssueFieldsUseCase,
   ) {}
 
   listTools(): Tool[] {
@@ -64,6 +97,54 @@ export class JiraTools implements ToolModule {
           additionalProperties: false,
         },
       },
+      {
+        name: 'add_jira_comment',
+        description: 'Add a comment to a Jira issue (for work report and notes).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            issueIdOrKey: { type: 'string', description: 'Jira issue id or key.' },
+            body: { type: 'string', description: 'Comment text.' },
+          },
+          required: ['issueIdOrKey', 'body'],
+          additionalProperties: false,
+        },
+      },
+      {
+        name: 'transition_jira_issue',
+        description: 'Transition a Jira issue to another workflow status.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            issueIdOrKey: { type: 'string', description: 'Jira issue id or key.' },
+            transitionId: { type: 'string', description: 'Transition id to apply.' },
+            fields: {
+              type: 'object',
+              description: 'Optional fields to set while transitioning e.g. custom fields.',
+              additionalProperties: true,
+            },
+          },
+          required: ['issueIdOrKey', 'transitionId'],
+          additionalProperties: false,
+        },
+      },
+      {
+        name: 'update_jira_issue_fields',
+        description: 'Update Jira issue fields such as start/end dates, AC, code review status.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            issueIdOrKey: { type: 'string', description: 'Jira issue id or key.' },
+            fields: {
+              type: 'object',
+              description: 'Fields to update in issue e.g. startDate, dueDate, customfield_XXXX.',
+              additionalProperties: true,
+            },
+          },
+          required: ['issueIdOrKey', 'fields'],
+          additionalProperties: false,
+        },
+      }
     ];
   }
 
@@ -107,6 +188,64 @@ export class JiraTools implements ToolModule {
           },
         ],
         structuredContent: result,
+      };
+    }
+
+    if (name === 'add_jira_comment') {
+      const args = addCommentInputSchema.parse(rawArgs ?? {});
+
+      const result = await this.addJiraCommentUseCase.execute({
+        issueIdOrKey: args.issueIdOrKey,
+        body: args.body,
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Comment added successfully',
+          },
+        ],
+        structuredContent: result,
+      };
+    }
+
+    if (name === 'transition_jira_issue') {
+      const args = transitionIssueInputSchema.parse(rawArgs ?? {});
+
+      await this.transitionJiraIssueUseCase.execute({
+        issueIdOrKey: args.issueIdOrKey,
+        transitionId: args.transitionId,
+        fields: args.fields,
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Issue ${args.issueIdOrKey} transitioned via ${args.transitionId}.`,
+          },
+        ],
+        structuredContent: { issueIdOrKey: args.issueIdOrKey, transitioned: true },
+      };
+    }
+
+    if (name === 'update_jira_issue_fields') {
+      const args = updateIssueFieldsInputSchema.parse(rawArgs ?? {});
+
+      await this.updateJiraIssueFieldsUseCase.execute({
+        issueIdOrKey: args.issueIdOrKey,
+        fields: args.fields,
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Issue ${args.issueIdOrKey} fields updated successfully.`,
+          },
+        ],
+        structuredContent: { issueIdOrKey: args.issueIdOrKey, updatedFields: args.fields },
       };
     }
 

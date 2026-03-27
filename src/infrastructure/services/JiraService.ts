@@ -5,6 +5,11 @@ import {
   JiraIssue,
   CreateJiraTicketInput,
   CreateJiraTicketResult,
+  AddJiraCommentInput,
+  AddJiraCommentResult,
+  GetIssueTransitionsInput,
+  TransitionJiraIssueInput,
+  UpdateJiraIssueFieldsInput,
 } from '../../application/interfaces/JiraRepository.js';
 import { env } from '../../config/env.js';
 
@@ -66,6 +71,41 @@ export class JiraService implements JiraIssueReader {
       key: response.key,
       url: `${this.baseUrl}/browse/${response.key}`,
     };
+  }
+
+  async addComment(input: AddJiraCommentInput): Promise<AddJiraCommentResult> {
+    const result = await this.client.issueComments.addComment({
+      issueIdOrKey: input.issueIdOrKey,
+      comment: input.body,
+    });
+
+    return {
+      id: (result as any).id,
+      body: input.body,
+    };
+  }
+
+  async getIssueTransitions(input: GetIssueTransitionsInput): Promise<unknown> {
+    return this.client.issues.getTransitions({
+      issueIdOrKey: input.issueIdOrKey,
+      expand: 'transitions.fields',
+    });
+  }
+
+  async transitionIssue(input: TransitionJiraIssueInput): Promise<void> {
+    await this.client.issues.doTransition({
+      issueIdOrKey: input.issueIdOrKey,
+      transition: { id: input.transitionId },
+      fields: input.fields,
+    });
+  }
+
+  async updateIssueFields(input: UpdateJiraIssueFieldsInput): Promise<void> {
+    await this.client.issues.editIssue({
+      issueIdOrKey: input.issueIdOrKey,
+      fields: input.fields,
+      returnIssue: false,
+    });
   }
 }
 

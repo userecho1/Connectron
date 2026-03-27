@@ -16,6 +16,9 @@ import { JiraTools } from './JiraTools';
 import { GetGitInfoUseCase } from '../../application/usecases/GetGitInfoUseCase';
 import { buildGitService } from '../../infrastructure/services/GitService';
 import { GitTools } from './GitTools';
+import { AddJiraCommentUseCase } from '../../application/usecases/AddJiraCommentUseCase';
+import { TransitionJiraIssueUseCase } from '../../application/usecases/TransitionJiraIssueUseCase';
+import { UpdateJiraIssueFieldsUseCase } from '../../application/usecases/UpdateJiraIssueFieldsUseCase';
 import { ToolModule } from './ToolModule';
 
 export function registerToolModules(): ToolModule[] {
@@ -49,7 +52,18 @@ export function registerToolModules(): ToolModule[] {
     const jiraService = buildJiraServiceFromEnv();
     const searchJiraIssuesUseCase = new SearchJiraIssuesUseCase(jiraService);
     const createTicketUseCase = new CreateTicketUseCase(jiraService);
-    modules.push(new JiraTools(searchJiraIssuesUseCase, createTicketUseCase));
+    const addJiraCommentUseCase = new AddJiraCommentUseCase(jiraService);
+    const transitionJiraIssueUseCase = new TransitionJiraIssueUseCase(jiraService);
+    const updateJiraIssueFieldsUseCase = new UpdateJiraIssueFieldsUseCase(jiraService);
+    modules.push(
+      new JiraTools(
+        searchJiraIssuesUseCase,
+        createTicketUseCase,
+        addJiraCommentUseCase,
+        transitionJiraIssueUseCase,
+        updateJiraIssueFieldsUseCase,
+      ),
+    );
     logger.info('Jira tool module enabled.');
   } catch (error) {
     logger.warn('Jira tool module disabled due to invalid or missing Jira configuration.', {
