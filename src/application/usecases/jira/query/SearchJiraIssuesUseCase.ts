@@ -1,4 +1,4 @@
-import { JiraIssueReader, SearchJiraIssuesInput, JiraIssue } from '../../../interfaces/IJiraProvider.js';
+import { JiraIssueReader, SearchJiraIssuesInput, JiraIssue } from '../../../interfaces';
 
 export class SearchJiraIssuesUseCase {
   constructor(private readonly jiraReader: JiraIssueReader) {}
@@ -14,4 +14,5 @@ export class SearchJiraIssuesUseCase {
     });
   }
 }
+
 

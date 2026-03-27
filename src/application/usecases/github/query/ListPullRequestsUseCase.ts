@@ -2,7 +2,7 @@ import {
   GithubPullRequestReader,
   ListPullRequestsInput,
   ListPullRequestsResult,
-} from '../../../interfaces/IGithubProvider';
+} from '../../../interfaces';
 
 export class ListPullRequestsUseCase {
   constructor(private readonly githubPullRequestReader: GithubPullRequestReader) {}
@@ -30,4 +30,5 @@ export class ListPullRequestsUseCase {
     });
   }
 }
+
 

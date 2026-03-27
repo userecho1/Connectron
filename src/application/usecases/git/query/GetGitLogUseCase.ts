@@ -1,4 +1,4 @@
-import { IGitProvider, GitLogInput } from '../../../interfaces/IGitProvider.js';
+import { IGitProvider, GitLogInput } from '../../../interfaces';
 
 export class GetGitLogUseCase {
   constructor(private readonly gitProvider: IGitProvider) {}
@@ -8,3 +8,4 @@ export class GetGitLogUseCase {
     return this.gitProvider.getLog({ ...input, maxCount });
   }
 }
+

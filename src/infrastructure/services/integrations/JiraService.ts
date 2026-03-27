@@ -10,8 +10,8 @@ import {
   GetIssueTransitionsInput,
   TransitionJiraIssueInput,
   UpdateJiraIssueFieldsInput,
-} from '../../application/interfaces/IJiraProvider.js';
-import { env } from '../../config/env.js';
+} from '../../../application/interfaces';
+import { env } from '../../../config/env.js';
 
 export class JiraService implements JiraIssueReader {
   private readonly client: InstanceType<typeof JiraClient>;
@@ -116,3 +116,4 @@ export function buildJiraServiceFromEnv(): JiraService {
 
   return new JiraService(env.JIRA_HOST, env.JIRA_EMAIL, env.JIRA_API_TOKEN);
 }
+

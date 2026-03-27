@@ -14,7 +14,7 @@ import express from 'express';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 import { apiKeyAuthMiddleware } from '../auth/middleware';
-import { ToolModule } from './tools/ToolModule';
+import { ToolModule } from './tools/shared/ToolModule';
 import { PromptModule } from './prompts/PromptModule';
 import { ResourceModule } from './resources/ResourceModule';
 import { enforceApprovalPolicy } from './security/approvalPolicy';

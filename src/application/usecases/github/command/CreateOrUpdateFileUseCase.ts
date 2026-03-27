@@ -2,7 +2,7 @@ import {
   CreateOrUpdateFileInput,
   CreateOrUpdateFileResult,
   GithubPullRequestReader,
-} from '../../../interfaces/IGithubProvider.js';
+} from '../../../interfaces';
 
 export class CreateOrUpdateFileUseCase {
   constructor(private readonly githubRepository: GithubPullRequestReader) {}
@@ -23,4 +23,5 @@ export class CreateOrUpdateFileUseCase {
     });
   }
 }
+
 

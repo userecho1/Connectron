@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { ToolModule } from './ToolModule.js';
-import { GenerateDomainMcpServersUseCase } from '../../application/usecases/domain-mcp-generator/index.js';
+import { ToolModule } from '../shared/ToolModule.js';
+import { GenerateDomainMcpServersUseCase } from '../../../application/usecases/domain-mcp-generator/index.js';
 
 export const DOMAIN_MCP_GENERATOR_TOOL_NAME = 'domain_mcp_generator';
 

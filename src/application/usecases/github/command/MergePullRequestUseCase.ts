@@ -2,7 +2,7 @@ import {
   MergePullRequestInput,
   MergePullRequestResult,
   GithubPullRequestReader,
-} from '../../../interfaces/IGithubProvider.js';
+} from '../../../interfaces';
 
 export class MergePullRequestUseCase {
   constructor(private readonly githubRepository: GithubPullRequestReader) {}
@@ -22,4 +22,5 @@ export class MergePullRequestUseCase {
     });
   }
 }
+
 

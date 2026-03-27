@@ -5,13 +5,13 @@ import {
   CreateOrUpdateFileUseCase,
   CreatePullRequestUseCase,
   MergePullRequestUseCase,
-} from '../../application/usecases/github';
+} from '../../../application/usecases/github';
 import {
   PullRequestDirection,
   PullRequestSort,
   PullRequestState,
-} from '../../application/interfaces/IGithubProvider';
-import { ToolModule } from './ToolModule';
+} from '../../../application/interfaces';
+import { ToolModule } from '../shared/ToolModule';
 
 const listPullRequestsInputSchema = z
   .object({
@@ -328,3 +328,4 @@ export class GithubTools implements ToolModule {
     }
   }
 }
+

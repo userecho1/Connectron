@@ -1,4 +1,4 @@
-import { JavaAnalysisRequest, ProjectArchitectureReport, IJavaAnalysisProvider } from '../../../interfaces/IJavaAnalysisProvider.js';
+import { JavaAnalysisRequest, ProjectArchitectureReport, IJavaAnalysisProvider } from '../../../interfaces';
 
 export class AnalyzeJavaProjectUseCase {
   constructor(private readonly javaAnalysisProvider: IJavaAnalysisProvider) {}
@@ -15,8 +15,8 @@ export class AnalyzeJavaProjectUseCase {
     return this.javaAnalysisProvider.analyzeProject({
       ...input,
       projectRoot: input.projectRoot.trim(),
-      includePackages: input.includePackages?.map((value) => value.trim()).filter(Boolean),
-      excludePackages: input.excludePackages?.map((value) => value.trim()).filter(Boolean),
+      includePackages: input.includePackages?.map((value: string) => value.trim()).filter(Boolean),
+      excludePackages: input.excludePackages?.map((value: string) => value.trim()).filter(Boolean),
     });
   }
 }

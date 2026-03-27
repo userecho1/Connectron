@@ -2,7 +2,7 @@ import {
   GenerateMcpToolRequest,
   IToolGenerationProvider,
   ToolGenerationPlan,
-} from '../../../interfaces/IToolGenerationProvider.js';
+} from '../../../interfaces';
 
 export class GenerateMcpToolUseCase {
   constructor(private readonly toolGenerationProvider: IToolGenerationProvider) {}

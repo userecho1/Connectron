@@ -1,4 +1,4 @@
-import { IGitProvider } from '../../../interfaces/IGitProvider.js';
+import { IGitProvider } from '../../../interfaces';
 
 export interface GitAddInput {
   repoPath?: string;
@@ -12,3 +12,4 @@ export class GitAddUseCase {
     return this.gitProvider.add(input);
   }
 }
+

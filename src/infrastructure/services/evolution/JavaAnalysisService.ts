@@ -6,7 +6,7 @@ import {
   JavaApiEndpoint,
   JavaServiceMethod,
   ProjectArchitectureReport,
-} from '../../application/interfaces/IJavaAnalysisProvider.js';
+} from '../../../application/interfaces';
 
 const DEFAULT_SCAN_DEPTH = 8;
 
@@ -387,3 +387,4 @@ export class JavaAnalysisService implements IJavaAnalysisProvider {
     return Array.from(contexts).sort();
   }
 }
+

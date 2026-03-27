@@ -2,7 +2,7 @@ import {
   CreateJiraTicketInput,
   CreateJiraTicketResult,
   JiraIssueReader,
-} from '../../../interfaces/IJiraProvider.js';
+} from '../../../interfaces';
 
 export class CreateTicketUseCase {
   constructor(private readonly jiraRepository: JiraIssueReader) {}
@@ -31,4 +31,5 @@ export class CreateTicketUseCase {
     });
   }
 }
+
 

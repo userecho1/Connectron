@@ -3,7 +3,7 @@ import {
   ExtractCapabilitiesRequest,
   ExtractCapabilitiesResult,
   ICapabilityExtractionProvider,
-} from '../../application/interfaces/ICapabilityExtractionProvider.js';
+} from '../../../application/interfaces';
 
 const verbPriority = ['create', 'get', 'list', 'update', 'delete', 'cancel'] as const;
 
@@ -217,3 +217,4 @@ export class CapabilityExtractionService implements ICapabilityExtractionProvide
       .toLowerCase();
   }
 }
+

@@ -1,5 +1,5 @@
 import { Octokit } from '@octokit/rest';
-import { env } from '../../config/env';
+import { env } from '../../../config/env';
 import {
   GithubPullRequestReader,
   ListPullRequestsInput,
@@ -12,7 +12,7 @@ import {
   CreatePullRequestResult,
   MergePullRequestInput,
   MergePullRequestResult,
-} from '../../application/interfaces/IGithubProvider';
+} from '../../../application/interfaces';
 
 export class GithubService implements GithubPullRequestReader {
   constructor(private readonly octokit: Octokit) {}
@@ -150,3 +150,4 @@ export function buildGithubServiceFromEnv(): GithubService {
 
   return new GithubService(octokit);
 }
+

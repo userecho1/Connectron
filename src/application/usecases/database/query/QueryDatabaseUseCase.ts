@@ -2,7 +2,7 @@ import {
   DatabaseQueryRequest,
   DatabaseQueryResult,
   IDatabaseProvider,
-} from '../../../interfaces/IDatabaseProvider';
+} from '../../../interfaces';
 
 export class QueryDatabaseUseCase {
   constructor(private readonly databaseRepository: IDatabaseProvider) {}
@@ -27,4 +27,5 @@ export class QueryDatabaseUseCase {
     });
   }
 }
+
 

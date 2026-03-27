@@ -3,7 +3,7 @@ import {
   GenerateDomainMcpServersRequest,
   GenerateDomainMcpServersResult,
   IDomainMcpGenerationProvider,
-} from '../../application/interfaces/IDomainMcpGenerationProvider.js';
+} from '../../../application/interfaces';
 
 export class DomainMcpGenerationService implements IDomainMcpGenerationProvider {
   async generateDomainServerPlans(
@@ -139,3 +139,4 @@ export class DomainMcpGenerationService implements IDomainMcpGenerationProvider 
       .join('');
   }
 }
+

@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { QueryDatabaseUseCase } from '../../application/usecases/database';
-import { DatabaseQueryParameters } from '../../application/interfaces/IDatabaseProvider';
-import { ToolModule } from './ToolModule';
+import { QueryDatabaseUseCase } from '../../../application/usecases/database';
+import { DatabaseQueryParameters } from '../../../application/interfaces';
+import { ToolModule } from '../shared/ToolModule';
 
 const queryDatabaseInputSchema = z
   .object({
@@ -90,3 +90,4 @@ export class DatabaseTools implements ToolModule {
     }
   }
 }
+

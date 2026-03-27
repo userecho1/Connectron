@@ -2,7 +2,7 @@ import {
   ExtractCapabilitiesRequest,
   ExtractCapabilitiesResult,
   ICapabilityExtractionProvider,
-} from '../../../interfaces/ICapabilityExtractionProvider.js';
+} from '../../../interfaces';
 
 export class ExtractCapabilitiesUseCase {
   constructor(private readonly capabilityExtractionProvider: ICapabilityExtractionProvider) {}

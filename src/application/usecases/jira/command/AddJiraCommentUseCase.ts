@@ -2,7 +2,7 @@ import {
   JiraIssueReader,
   AddJiraCommentInput,
   AddJiraCommentResult,
-} from '../../../interfaces/IJiraProvider.js';
+} from '../../../interfaces';
 
 export class AddJiraCommentUseCase {
   constructor(private readonly jiraRepository: JiraIssueReader) {}
@@ -21,4 +21,5 @@ export class AddJiraCommentUseCase {
     });
   }
 }
+
 

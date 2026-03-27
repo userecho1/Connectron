@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { AnalyzeJavaProjectUseCase } from '../../application/usecases/java-analysis/index.js';
-import { ToolModule } from './ToolModule.js';
+import { AnalyzeJavaProjectUseCase } from '../../../application/usecases/java-analysis/index.js';
+import { ToolModule } from '../shared/ToolModule.js';
 
 export const ANALYZE_JAVA_PROJECT_TOOL_NAME = 'analyze_java_project';
 

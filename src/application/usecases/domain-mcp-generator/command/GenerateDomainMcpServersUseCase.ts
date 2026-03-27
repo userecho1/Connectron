@@ -2,7 +2,7 @@ import {
   GenerateDomainMcpServersRequest,
   GenerateDomainMcpServersResult,
   IDomainMcpGenerationProvider,
-} from '../../../interfaces/IDomainMcpGenerationProvider.js';
+} from '../../../interfaces';
 
 export class GenerateDomainMcpServersUseCase {
   constructor(private readonly domainMcpGenerationProvider: IDomainMcpGenerationProvider) {}
@@ -23,3 +23,4 @@ export class GenerateDomainMcpServersUseCase {
     return this.domainMcpGenerationProvider.generateDomainServerPlans(input);
   }
 }
+

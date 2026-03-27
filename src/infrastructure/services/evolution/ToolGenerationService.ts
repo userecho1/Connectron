@@ -3,7 +3,7 @@ import {
   GeneratedFilePlan,
   IToolGenerationProvider,
   ToolGenerationPlan,
-} from '../../application/interfaces/IToolGenerationProvider.js';
+} from '../../../application/interfaces';
 
 export class ToolGenerationService implements IToolGenerationProvider {
   async generateMcpToolPlan(input: GenerateMcpToolRequest): Promise<ToolGenerationPlan> {
@@ -151,3 +151,4 @@ export class ToolGenerationService implements IToolGenerationProvider {
     ].join('\n');
   }
 }
+

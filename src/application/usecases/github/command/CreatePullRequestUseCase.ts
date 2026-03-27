@@ -2,7 +2,7 @@ import {
   CreatePullRequestInput,
   CreatePullRequestResult,
   GithubPullRequestReader,
-} from '../../../interfaces/IGithubProvider.js';
+} from '../../../interfaces';
 
 export class CreatePullRequestUseCase {
   constructor(private readonly githubRepository: GithubPullRequestReader) {}
@@ -22,4 +22,5 @@ export class CreatePullRequestUseCase {
     });
   }
 }
+
 

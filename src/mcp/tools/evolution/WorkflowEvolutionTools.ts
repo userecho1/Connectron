@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { ToolModule } from './ToolModule.js';
-import { WorkflowExecuteMonolithEvolutionUseCase } from '../../application/usecases/workflow/index.js';
+import { ToolModule } from '../shared/ToolModule.js';
+import { WorkflowExecuteMonolithEvolutionUseCase } from '../../../application/usecases/workflow/index.js';
 
 export const WORKFLOW_EXECUTE_MONOLITH_EVOLUTION_TOOL_NAME = 'workflow_execute_monolith_evolution';
 

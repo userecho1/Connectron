@@ -1,4 +1,4 @@
-import { IGitProvider } from '../../../interfaces/IGitProvider.js';
+import { IGitProvider } from '../../../interfaces';
 
 export interface GitCheckoutInput {
   repoPath?: string;
@@ -12,3 +12,4 @@ export class GitCheckoutUseCase {
     return this.gitProvider.checkout(input);
   }
 }
+

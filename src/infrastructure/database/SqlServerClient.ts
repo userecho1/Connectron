@@ -4,7 +4,7 @@ import {
   DatabaseQueryRequest,
   DatabaseQueryResult,
   IDatabaseProvider,
-} from '../../application/interfaces/IDatabaseProvider';
+} from '../../application/interfaces';
 import { env } from '../../config/env';
 import { ILogger, logger } from '../../utils/logger';
 
@@ -84,3 +84,4 @@ export function buildSqlServerConfigFromEnv(): any {
     },
   } as SqlConfig;
 }
+

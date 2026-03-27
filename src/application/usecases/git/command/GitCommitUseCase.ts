@@ -1,4 +1,4 @@
-import { IGitProvider } from '../../../interfaces/IGitProvider.js';
+import { IGitProvider } from '../../../interfaces';
 
 export interface GitCommitInput {
   repoPath?: string;
@@ -12,3 +12,4 @@ export class GitCommitUseCase {
     return this.gitProvider.commit(input);
   }
 }
+

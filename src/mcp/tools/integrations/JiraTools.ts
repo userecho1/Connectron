@@ -1,14 +1,14 @@
 import { z } from 'zod';
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { ToolModule } from './ToolModule.js';
+import { ToolModule } from '../shared/ToolModule.js';
 import {
   SearchJiraIssuesUseCase,
   CreateTicketUseCase,
   AddJiraCommentUseCase,
   TransitionJiraIssueUseCase,
   UpdateJiraIssueFieldsUseCase,
-} from '../../application/usecases/jira/index.js';
-import { WorkflowExecuteJiraStoryUseCase } from '../../application/usecases/workflow/index.js';
+} from '../../../application/usecases/jira/index.js';
+import { WorkflowExecuteJiraStoryUseCase } from '../../../application/usecases/workflow/index.js';
 
 const searchJiraIssuesInputSchema = z
   .object({

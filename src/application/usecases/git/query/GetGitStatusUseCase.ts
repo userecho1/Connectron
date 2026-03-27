@@ -1,4 +1,4 @@
-import { IGitProvider, GitStatusInput, GitStatusResult } from '../../../interfaces/IGitProvider.js';
+import { IGitProvider, GitStatusInput, GitStatusResult } from '../../../interfaces';
 
 export class GetGitStatusUseCase {
   constructor(private readonly gitProvider: IGitProvider) {}
@@ -7,3 +7,4 @@ export class GetGitStatusUseCase {
     return this.gitProvider.getStatus(input);
   }
 }
+

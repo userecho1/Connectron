@@ -1,7 +1,7 @@
-import { AnalyzeJavaProjectUseCase } from '../java-analysis/query/AnalyzeJavaProjectUseCase.js';
-import { ExtractCapabilitiesUseCase } from '../capability-extractor/query/ExtractCapabilitiesUseCase.js';
-import { GenerateMcpToolUseCase } from '../tool-generator/command/GenerateMcpToolUseCase.js';
-import { GenerateDomainMcpServersUseCase } from '../domain-mcp-generator/command/GenerateDomainMcpServersUseCase.js';
+import { AnalyzeJavaProjectUseCase } from '../../java-analysis/query/AnalyzeJavaProjectUseCase.js';
+import { ExtractCapabilitiesUseCase } from '../../capability-extractor/query/ExtractCapabilitiesUseCase.js';
+import { GenerateMcpToolUseCase } from '../../tool-generator/command/GenerateMcpToolUseCase.js';
+import { GenerateDomainMcpServersUseCase } from '../../domain-mcp-generator/command/GenerateDomainMcpServersUseCase.js';
 
 export interface WorkflowExecuteMonolithEvolutionInput {
   projectRoot: string;

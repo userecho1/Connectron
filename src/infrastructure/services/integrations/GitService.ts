@@ -1,9 +1,9 @@
-﻿import { execFile } from 'child_process';
+import { execFile } from 'child_process';
 import { existsSync } from 'fs';
 import path from 'path';
 import { promisify } from 'util';
-import { IGitProvider, GitStatusResult, GitStatusInput, GitLogInput } from '../../application/interfaces/IGitProvider.js';
-import { env } from '../../config/env.js';
+import { IGitProvider, GitStatusResult, GitStatusInput, GitLogInput } from '../../../application/interfaces';
+import { env } from '../../../config/env.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -113,3 +113,4 @@ export class GitService implements IGitProvider {
 export function buildGitService(): GitService {
   return new GitService();
 }
+
