@@ -17,6 +17,7 @@ import { apiKeyAuthMiddleware } from '../auth/middleware';
 import { ToolModule } from './tools/ToolModule';
 import { PromptModule } from './prompts/PromptModule';
 import { ResourceModule } from './resources/ResourceModule';
+import { enforceApprovalPolicy } from './security/approvalPolicy';
 
 export class NexusFlowServer {
   private server: Server;
@@ -70,6 +71,8 @@ export class NexusFlowServer {
       logger.info(`Tool executed: ${name}`, args);
 
       try {
+        enforceApprovalPolicy(name, args);
+
         for (const module of this.toolModules) {
           const toolResult = await module.callTool(name, args);
           if (toolResult) {

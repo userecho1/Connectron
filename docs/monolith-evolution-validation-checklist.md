@@ -14,6 +14,13 @@ This document defines validation checks for Connectron monolith-evolution tools.
 
 All mutating operations require explicit user approval by passing confirm=true.
 
+Enforcement is applied in two layers:
+
+- Tool-level schema validation (input requires confirm=true)
+- Server-level centralized approval gate before tool dispatch
+
+This ensures consistent behavior across MCP clients even if a client does not always present an interactive approval prompt.
+
 - Git write operations: git_add, git_commit, git_push, git_pull, git_checkout
 - GitHub write operations: create_or_update_file, create_pull_request, merge_pull_request
 - Jira write operations: create_ticket, add_jira_comment, transition_jira_issue, update_jira_issue_fields, workflow_execute_jira_story
