@@ -48,6 +48,8 @@ import { ToolGeneratorTools } from './ToolGeneratorTools';
 import { GenerateDomainMcpServersUseCase } from '../../application/usecases/domain-mcp-generator';
 import { DomainMcpGenerationService } from '../../infrastructure/services/DomainMcpGenerationService';
 import { DomainMcpGeneratorTools } from './DomainMcpGeneratorTools';
+import { WorkflowExecuteMonolithEvolutionUseCase } from '../../application/usecases/workflow';
+import { WorkflowEvolutionTools } from './WorkflowEvolutionTools';
 
 export function registerToolModules(): ToolModule[] {
   const modules: ToolModule[] = [];
@@ -171,6 +173,25 @@ export function registerToolModules(): ToolModule[] {
     logger.info('Domain MCP generator module enabled.');
   } catch (error) {
     logger.warn('Domain MCP generator module disabled.', { error });
+  }
+
+  try {
+    const javaAnalysisService = new JavaAnalysisService();
+    const capabilityExtractionService = new CapabilityExtractionService();
+    const toolGenerationService = new ToolGenerationService();
+    const domainMcpGenerationService = new DomainMcpGenerationService();
+
+    const workflowExecuteMonolithEvolutionUseCase = new WorkflowExecuteMonolithEvolutionUseCase(
+      new AnalyzeJavaProjectUseCase(javaAnalysisService),
+      new ExtractCapabilitiesUseCase(capabilityExtractionService),
+      new GenerateMcpToolUseCase(toolGenerationService),
+      new GenerateDomainMcpServersUseCase(domainMcpGenerationService),
+    );
+
+    modules.push(new WorkflowEvolutionTools(workflowExecuteMonolithEvolutionUseCase));
+    logger.info('Workflow evolution tool module enabled.');
+  } catch (error) {
+    logger.warn('Workflow evolution tool module disabled.', { error });
   }
 
   return modules;
