@@ -29,6 +29,41 @@ export class GitService implements GitOperationRepository {
       throw new Error(`Failed to get git log: ${error.message}`);
     }
   }
+
+  async add(input: { repoPath?: string; filePattern?: string }): Promise<string> {
+    const cwd = input.repoPath || process.cwd();
+    const target = input.filePattern || '.';
+    const { stdout } = await execAsync(`git add ${target}`, { cwd });
+    return stdout.trim() || 'git add success';
+  }
+
+  async commit(input: { repoPath?: string; message: string }): Promise<string> {
+    const cwd = input.repoPath || process.cwd();
+    const { stdout } = await execAsync(`git commit -m "${input.message.replace(/"/g, '\\"')}"`, { cwd });
+    return stdout.trim();
+  }
+
+  async push(input: { repoPath?: string; remote?: string; branch?: string }): Promise<string> {
+    const cwd = input.repoPath || process.cwd();
+    const remote = input.remote || 'origin';
+    const branch = input.branch || 'main';
+    const { stdout } = await execAsync(`git push ${remote} ${branch}`, { cwd });
+    return stdout.trim();
+  }
+
+  async pull(input: { repoPath?: string; remote?: string; branch?: string }): Promise<string> {
+    const cwd = input.repoPath || process.cwd();
+    const remote = input.remote || 'origin';
+    const branch = input.branch || 'main';
+    const { stdout } = await execAsync(`git pull ${remote} ${branch}`, { cwd });
+    return stdout.trim();
+  }
+
+  async checkout(input: { repoPath?: string; branch: string }): Promise<string> {
+    const cwd = input.repoPath || process.cwd();
+    const { stdout } = await execAsync(`git checkout ${input.branch}`, { cwd });
+    return stdout.trim();
+  }
 }
 
 export function buildGitService(): GitService {

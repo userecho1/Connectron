@@ -6,6 +6,7 @@ import { CreateTicketUseCase } from '../../application/usecases/CreateTicketUseC
 import { AddJiraCommentUseCase } from '../../application/usecases/AddJiraCommentUseCase.js';
 import { TransitionJiraIssueUseCase } from '../../application/usecases/TransitionJiraIssueUseCase.js';
 import { UpdateJiraIssueFieldsUseCase } from '../../application/usecases/UpdateJiraIssueFieldsUseCase.js';
+import { WorkflowExecuteJiraStoryUseCase } from '../../application/usecases/WorkflowExecuteJiraStoryUseCase.js';
 
 const searchJiraIssuesInputSchema = z
   .object({
@@ -52,6 +53,15 @@ const updateIssueFieldsInputSchema = z
   })
   .strict();
 
+const workflowExecuteJiraStoryInputSchema = z
+  .object({
+    issueIdOrKey: z.string().min(1).describe('Jira issue ID or key.'),
+    workReport: z.string().min(1).describe('Work report comment.'),
+    transitionId: z.string().min(1).describe('Transition id for Jira workflow.'),
+    fieldsToUpdate: z.record(z.string(), z.any()).describe('Fields to update on issue.'),
+  })
+  .strict();
+
 export class JiraTools implements ToolModule {
   constructor(
     private readonly searchJiraIssuesUseCase: SearchJiraIssuesUseCase,
@@ -59,6 +69,7 @@ export class JiraTools implements ToolModule {
     private readonly addJiraCommentUseCase: AddJiraCommentUseCase,
     private readonly transitionJiraIssueUseCase: TransitionJiraIssueUseCase,
     private readonly updateJiraIssueFieldsUseCase: UpdateJiraIssueFieldsUseCase,
+    private readonly workflowExecuteJiraStoryUseCase: WorkflowExecuteJiraStoryUseCase,
   ) {}
 
   listTools(): Tool[] {
@@ -142,6 +153,25 @@ export class JiraTools implements ToolModule {
             },
           },
           required: ['issueIdOrKey', 'fields'],
+          additionalProperties: false,
+        },
+      },
+      {
+        name: 'workflow_execute_jira_story',
+        description: 'Execute a single workflow: comment, transition, and update issue fields in Jira.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            issueIdOrKey: { type: 'string', description: 'Jira issue id or key.' },
+            workReport: { type: 'string', description: 'Work report to add as comment.' },
+            transitionId: { type: 'string', description: 'Transition id to apply.' },
+            fieldsToUpdate: {
+              type: 'object',
+              description: 'Fields map to update on issue.',
+              additionalProperties: true,
+            },
+          },
+          required: ['issueIdOrKey', 'workReport', 'transitionId', 'fieldsToUpdate'],
           additionalProperties: false,
         },
       }
@@ -246,6 +276,27 @@ export class JiraTools implements ToolModule {
           },
         ],
         structuredContent: { issueIdOrKey: args.issueIdOrKey, updatedFields: args.fields },
+      };
+    }
+
+    if (name === 'workflow_execute_jira_story') {
+      const args = workflowExecuteJiraStoryInputSchema.parse(rawArgs ?? {});
+
+      const result = await this.workflowExecuteJiraStoryUseCase.execute({
+        issueIdOrKey: args.issueIdOrKey,
+        workReport: args.workReport,
+        transitionId: args.transitionId,
+        fieldsToUpdate: args.fieldsToUpdate,
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Workflow executed for issue ${args.issueIdOrKey}. comment=${result.commentId}, transitioned=${result.transitioned}.`,
+          },
+        ],
+        structuredContent: result,
       };
     }
 

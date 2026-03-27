@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { GetFileContentUseCase } from '../../application/usecases/GetFileContentUseCase';
 import { ListPullRequestsUseCase } from '../../application/usecases/ListPullRequestsUseCase';
+import { CreateOrUpdateFileUseCase } from '../../application/usecases/CreateOrUpdateFileUseCase';
+import { CreatePullRequestUseCase } from '../../application/usecases/CreatePullRequestUseCase';
+import { MergePullRequestUseCase } from '../../application/usecases/MergePullRequestUseCase';
 import {
   PullRequestDirection,
   PullRequestSort,
@@ -100,14 +103,113 @@ export const getFileContentToolDefinition = {
   },
 } as const;
 
+export const CREATE_OR_UPDATE_FILE_TOOL_NAME = 'create_or_update_file' as const;
+export const CREATE_PULL_REQUEST_TOOL_NAME = 'create_pull_request' as const;
+export const MERGE_PULL_REQUEST_TOOL_NAME = 'merge_pull_request' as const;
+
+const createOrUpdateFileInputSchema = z
+  .object({
+    owner: z.string().min(1).describe('Repository owner (organization or username).'),
+    repo: z.string().min(1).describe('Repository name.'),
+    path: z.string().min(1).describe('File path.'),
+    message: z.string().min(1).describe('Commit message.'),
+    content: z.string().min(1).describe('Base64 or UTF-8 content to write.'),
+    sha: z.string().optional().describe('Existing file SHA for update.'),
+    branch: z.string().optional().describe('Branch to write to.'),
+  })
+  .strict();
+
+const createPullRequestInputSchema = z
+  .object({
+    owner: z.string().min(1).describe('Repository owner (organization or username).'),
+    repo: z.string().min(1).describe('Repository name.'),
+    title: z.string().min(1).describe('Pull request title.'),
+    head: z.string().min(1).describe('Head branch.'),
+    base: z.string().min(1).describe('Base branch.'),
+    body: z.string().optional().describe('Pull request body text.'),
+  })
+  .strict();
+
+const mergePullRequestInputSchema = z
+  .object({
+    owner: z.string().min(1).describe('Repository owner (organization or username).'),
+    repo: z.string().min(1).describe('Repository name.'),
+    pull_number: z.number().int().min(1).describe('Pull request number.'),
+    commit_title: z.string().optional().describe('Merge commit title.'),
+    commit_message: z.string().optional().describe('Merge commit message.'),
+    merge_method: z
+      .enum(['merge', 'squash', 'rebase'])
+      .optional()
+      .describe('Merge method.'),
+  })
+  .strict();
+
 export class GithubTools implements ToolModule {
   constructor(
     private readonly listPullRequestsUseCase: ListPullRequestsUseCase,
     private readonly getFileContentUseCase: GetFileContentUseCase,
+    private readonly createOrUpdateFileUseCase: CreateOrUpdateFileUseCase,
+    private readonly createPullRequestUseCase: CreatePullRequestUseCase,
+    private readonly mergePullRequestUseCase: MergePullRequestUseCase,
   ) {}
 
   public listTools() {
-    return [listPullRequestsToolDefinition, getFileContentToolDefinition];
+    return [
+      listPullRequestsToolDefinition,
+      getFileContentToolDefinition,
+      {
+        name: CREATE_OR_UPDATE_FILE_TOOL_NAME,
+        description: 'Create or update a file in GitHub repository using Base64 content.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            owner: { type: 'string' },
+            repo: { type: 'string' },
+            path: { type: 'string' },
+            message: { type: 'string' },
+            content: { type: 'string' },
+            sha: { type: 'string' },
+            branch: { type: 'string' },
+          },
+          required: ['owner', 'repo', 'path', 'message', 'content'],
+          additionalProperties: false,
+        },
+      },
+      {
+        name: CREATE_PULL_REQUEST_TOOL_NAME,
+        description: 'Create a pull request on GitHub.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            owner: { type: 'string' },
+            repo: { type: 'string' },
+            title: { type: 'string' },
+            head: { type: 'string' },
+            base: { type: 'string' },
+            body: { type: 'string' },
+          },
+          required: ['owner', 'repo', 'title', 'head', 'base'],
+          additionalProperties: false,
+        },
+      },
+      {
+        name: MERGE_PULL_REQUEST_TOOL_NAME,
+        description: 'Merge an existing pull request on GitHub.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            owner: { type: 'string' },
+            repo: { type: 'string' },
+            pull_number: { type: 'number' },
+            commit_title: { type: 'string' },
+            commit_message: { type: 'string' },
+            merge_method: { type: 'string', enum: ['merge', 'squash', 'rebase'] },
+          },
+          required: ['owner', 'repo', 'pull_number'],
+          additionalProperties: false,
+        },
+      },
+    ];
   }
 
   public async callTool(name: string, rawArgs: unknown) {
@@ -152,6 +254,58 @@ export class GithubTools implements ToolModule {
             text: result.content,
           },
         ],
+        structuredContent: result,
+      };
+    }
+
+    if (name === CREATE_OR_UPDATE_FILE_TOOL_NAME) {
+      const input = createOrUpdateFileInputSchema.parse(rawArgs ?? {});
+      const result = await this.createOrUpdateFileUseCase.execute({
+        owner: input.owner,
+        repo: input.repo,
+        path: input.path,
+        message: input.message,
+        content: input.content,
+        sha: input.sha,
+        branch: input.branch,
+      });
+
+      return {
+        content: [{ type: 'text', text: `File ${input.path} upserted with sha ${result.content.sha}` }],
+        structuredContent: result,
+      };
+    }
+
+    if (name === CREATE_PULL_REQUEST_TOOL_NAME) {
+      const input = createPullRequestInputSchema.parse(rawArgs ?? {});
+      const result = await this.createPullRequestUseCase.execute({
+        owner: input.owner,
+        repo: input.repo,
+        title: input.title,
+        head: input.head,
+        base: input.base,
+        body: input.body,
+      });
+
+      return {
+        content: [{ type: 'text', text: `PR created: ${result.url}` }],
+        structuredContent: result,
+      };
+    }
+
+    if (name === MERGE_PULL_REQUEST_TOOL_NAME) {
+      const input = mergePullRequestInputSchema.parse(rawArgs ?? {});
+      const result = await this.mergePullRequestUseCase.execute({
+        owner: input.owner,
+        repo: input.repo,
+        pull_number: input.pull_number,
+        commit_title: input.commit_title,
+        commit_message: input.commit_message,
+        merge_method: input.merge_method,
+      });
+
+      return {
+        content: [{ type: 'text', text: `PR merged: ${result.sha}, merged=${result.merged}` }],
         structuredContent: result,
       };
     }

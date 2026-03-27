@@ -7,18 +7,22 @@ import { buildGithubServiceFromEnv } from '../../infrastructure/services/GithubS
 import { logger } from '../../utils/logger';
 import { ListPullRequestsUseCase } from '../../application/usecases/ListPullRequestsUseCase';
 import { GetFileContentUseCase } from '../../application/usecases/GetFileContentUseCase';
+import { CreateOrUpdateFileUseCase } from '../../application/usecases/CreateOrUpdateFileUseCase';
+import { CreatePullRequestUseCase } from '../../application/usecases/CreatePullRequestUseCase';
+import { MergePullRequestUseCase } from '../../application/usecases/MergePullRequestUseCase';
 import { DatabaseTools } from './DatabaseTools';
 import { GithubTools } from './GithubTools';
 import { SearchJiraIssuesUseCase } from '../../application/usecases/SearchJiraIssuesUseCase';
 import { CreateTicketUseCase } from '../../application/usecases/CreateTicketUseCase';
+import { AddJiraCommentUseCase } from '../../application/usecases/AddJiraCommentUseCase';
+import { TransitionJiraIssueUseCase } from '../../application/usecases/TransitionJiraIssueUseCase';
+import { UpdateJiraIssueFieldsUseCase } from '../../application/usecases/UpdateJiraIssueFieldsUseCase';
+import { WorkflowExecuteJiraStoryUseCase } from '../../application/usecases/WorkflowExecuteJiraStoryUseCase';
 import { buildJiraServiceFromEnv } from '../../infrastructure/services/JiraService';
 import { JiraTools } from './JiraTools';
 import { GetGitInfoUseCase } from '../../application/usecases/GetGitInfoUseCase';
 import { buildGitService } from '../../infrastructure/services/GitService';
 import { GitTools } from './GitTools';
-import { AddJiraCommentUseCase } from '../../application/usecases/AddJiraCommentUseCase';
-import { TransitionJiraIssueUseCase } from '../../application/usecases/TransitionJiraIssueUseCase';
-import { UpdateJiraIssueFieldsUseCase } from '../../application/usecases/UpdateJiraIssueFieldsUseCase';
 import { ToolModule } from './ToolModule';
 
 export function registerToolModules(): ToolModule[] {
@@ -40,7 +44,18 @@ export function registerToolModules(): ToolModule[] {
     const githubService = buildGithubServiceFromEnv();
     const listPullRequestsUseCase = new ListPullRequestsUseCase(githubService);
     const getFileContentUseCase = new GetFileContentUseCase(githubService);
-    modules.push(new GithubTools(listPullRequestsUseCase, getFileContentUseCase));
+    const createOrUpdateFileUseCase = new CreateOrUpdateFileUseCase(githubService);
+    const createPullRequestUseCase = new CreatePullRequestUseCase(githubService);
+    const mergePullRequestUseCase = new MergePullRequestUseCase(githubService);
+    modules.push(
+      new GithubTools(
+        listPullRequestsUseCase,
+        getFileContentUseCase,
+        createOrUpdateFileUseCase,
+        createPullRequestUseCase,
+        mergePullRequestUseCase,
+      ),
+    );
     logger.info('GitHub tool module enabled.');
   } catch (error) {
     logger.warn('GitHub tool module disabled due to invalid or missing GitHub configuration.', {
@@ -55,6 +70,7 @@ export function registerToolModules(): ToolModule[] {
     const addJiraCommentUseCase = new AddJiraCommentUseCase(jiraService);
     const transitionJiraIssueUseCase = new TransitionJiraIssueUseCase(jiraService);
     const updateJiraIssueFieldsUseCase = new UpdateJiraIssueFieldsUseCase(jiraService);
+    const workflowExecuteJiraStoryUseCase = new WorkflowExecuteJiraStoryUseCase(jiraService);
     modules.push(
       new JiraTools(
         searchJiraIssuesUseCase,
@@ -62,6 +78,7 @@ export function registerToolModules(): ToolModule[] {
         addJiraCommentUseCase,
         transitionJiraIssueUseCase,
         updateJiraIssueFieldsUseCase,
+        workflowExecuteJiraStoryUseCase,
       ),
     );
     logger.info('Jira tool module enabled.');

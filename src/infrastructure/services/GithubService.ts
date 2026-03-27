@@ -6,6 +6,12 @@ import {
   ListPullRequestsResult,
   GetFileContentInput,
   GetFileContentResult,
+  CreateOrUpdateFileInput,
+  CreateOrUpdateFileResult,
+  CreatePullRequestInput,
+  CreatePullRequestResult,
+  MergePullRequestInput,
+  MergePullRequestResult,
 } from '../../application/interfaces/GithubRepository';
 
 export class GithubService implements GithubPullRequestReader {
@@ -64,6 +70,71 @@ export class GithubService implements GithubPullRequestReader {
       url: response.data.html_url ?? response.data.url ?? '',
       encoding,
       content,
+    };
+  }
+
+  public async createOrUpdateFile(input: CreateOrUpdateFileInput): Promise<CreateOrUpdateFileResult> {
+    const response = await this.octokit.repos.createOrUpdateFileContents({
+      owner: input.owner,
+      repo: input.repo,
+      path: input.path,
+      message: input.message,
+      content: Buffer.from(input.content, 'utf-8').toString('base64'),
+      sha: input.sha,
+      branch: input.branch,
+    });
+
+    if (!response.data.content || !response.data.commit) {
+      throw new Error('Failed to create or update file content.');
+    }
+
+    return {
+      content: {
+        path: response.data.content.path ?? input.path,
+        sha: response.data.content.sha ?? '',
+        url: response.data.content.html_url ?? '',
+      },
+      commit: {
+        sha: response.data.commit.sha ?? '',
+        message: response.data.commit.message ?? '',
+      },
+    };
+  }
+
+  public async createPullRequest(input: CreatePullRequestInput): Promise<CreatePullRequestResult> {
+    const response = await this.octokit.pulls.create({
+      owner: input.owner,
+      repo: input.repo,
+      title: input.title,
+      head: input.head,
+      base: input.base,
+      body: input.body,
+    });
+
+    return {
+      id: response.data.id,
+      number: response.data.number,
+      url: response.data.html_url,
+      title: response.data.title,
+      base: response.data.base.ref,
+      head: response.data.head.ref,
+    };
+  }
+
+  public async mergePullRequest(input: MergePullRequestInput): Promise<MergePullRequestResult> {
+    const response = await this.octokit.pulls.merge({
+      owner: input.owner,
+      repo: input.repo,
+      pull_number: input.pull_number,
+      commit_title: input.commit_title,
+      commit_message: input.commit_message,
+      merge_method: input.merge_method,
+    });
+
+    return {
+      sha: response.data.sha,
+      merged: response.data.merged,
+      message: response.data.message,
     };
   }
 }
