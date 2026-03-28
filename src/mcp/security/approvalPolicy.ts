@@ -17,6 +17,12 @@ const mutatingToolNames = new Set<string>([
   'workflow_execute_jira_story',
   // Domain generation manual trigger
   'domain_mcp_generator',
+  // Workflow staged confirmation
+  'workflow_confirm_execution_plan',
+  // Workflow staged apply
+  'workflow_apply_execution_plan',
+  // Workflow staged command execution
+  'workflow_execute_approved_commands',
 ]);
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
