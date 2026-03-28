@@ -4,6 +4,9 @@
 
 这份文档用于快速验证 Java Monolith -> MCP 演进链路是否可用。
 
+使用与接入配置请参考：
+- docs/mcp-server-usage.md
+
 覆盖工具：
 - analyze_java_project
 - extract_capabilities
