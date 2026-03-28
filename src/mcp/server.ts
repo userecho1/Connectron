@@ -53,6 +53,14 @@ export class NexusFlowServer {
     this.toolModules = toolModules;
     this.promptModules = promptModules;
     this.resourceModules = resourceModules;
+
+    // Inject server instance into tool modules that support it (for sampling, etc)
+    for (const module of this.toolModules) {
+      if (module.setServer) {
+        module.setServer(this.server);
+      }
+    }
+
     this.registerHandlers();
   }
 

@@ -31,6 +31,7 @@ import {
 import { buildGithubServiceFromEnv, buildJiraServiceFromEnv, buildGitService } from '../../../infrastructure/services/integrations';
 import { logger } from '../../../utils/logger';
 import { DatabaseTools, GithubTools, JiraTools, GitTools } from '../integrations';
+import { SamplingTestTools } from './SamplingTestTools';
 import { ToolModule } from './ToolModule';
 import {
   JavaAnalysisService,
@@ -175,6 +176,9 @@ function registerWorkflowEvolutionTools(modules: ToolModule[]): void {
 
 export function registerToolModules(): ToolModule[] {
   const modules: ToolModule[] = [];
+
+  // Register baseline utility tool modules unconditionally
+  modules.push(new SamplingTestTools());
 
   const registerAll: Array<ModuleRegistrar> = [
     registerSafely(registerDatabaseTools, 'Database tool module disabled due to invalid or missing DB configuration.'),
