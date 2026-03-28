@@ -1,5 +1,5 @@
 import { GetPromptResult, Prompt } from '@modelcontextprotocol/sdk/types.js';
-import { PromptModule } from './PromptModule.js';
+import { PromptModule } from './PromptModule';
 
 export class TaskPrompts implements PromptModule {
   listPrompts(): Prompt[] {

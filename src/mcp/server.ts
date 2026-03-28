@@ -11,6 +11,7 @@ import {
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import express from 'express';
+import crypto from 'crypto';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 import { apiKeyAuthMiddleware } from '../auth/middleware';
@@ -157,12 +158,15 @@ export class NexusFlowServer {
     this.app.get('/sse', apiKeyAuthMiddleware, async (req, res) => {
       try {
         logger.info('New SSE connection establishing...');
-        this.sseTransport = new SSEServerTransport('/message', res);
+        const transport = new SSEServerTransport('/message', res);
+        this.sseTransport = transport;
         await this.server.connect(this.sseTransport);
 
         req.on('close', () => {
           logger.info('SSE connection closed');
-          this.sseTransport = null;
+          if (this.sseTransport === transport) {
+            this.sseTransport = null;
+          }
         });
       } catch (error) {
         logger.error('Failed to establish SSE transport', error);
@@ -194,7 +198,7 @@ export class NexusFlowServer {
 
   private async mountHttpTransportRoutes(): Promise<void> {
     this.httpTransport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined,
+      sessionIdGenerator: () => crypto.randomUUID(),
     });
     await this.server.connect(this.httpTransport);
 

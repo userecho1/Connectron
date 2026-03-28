@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
-import { ToolModule } from '../shared/ToolModule.js';
-import { GenerateDomainMcpServersUseCase } from '../../../application/usecases/domain-mcp-generator/index.js';
+import { ToolModule } from '../shared/ToolModule';
+import { GenerateDomainMcpServersUseCase } from '../../../application/usecases/domain-mcp-generator/index';
 
 export const DOMAIN_MCP_GENERATOR_TOOL_NAME = 'domain_mcp_generator';
 
@@ -78,7 +78,7 @@ export class DomainMcpGeneratorTools implements ToolModule {
           type: 'object',
           properties: {
             report: { type: 'object', description: 'ProjectArchitectureReport from analyze_java_project.' },
-            capabilities: { type: 'array', description: 'Capability candidates from extract_capabilities.' },
+            capabilities: { type: 'array', items: { type: 'object' }, description: 'Capability candidates from extract_capabilities.' },
             domains: { type: 'array', items: { type: 'string' }, description: 'Optional domains to include.' },
             confirm: { type: 'boolean', enum: [true], description: 'Must be true to confirm manual trigger.' },
           },

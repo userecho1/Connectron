@@ -3,7 +3,7 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { IGitProvider, GitStatusResult, GitStatusInput, GitLogInput } from '../../../application/interfaces';
-import { env } from '../../../config/env.js';
+import { env } from '../../../config/env';
 
 const execFileAsync = promisify(execFile);
 

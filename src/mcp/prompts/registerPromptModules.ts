@@ -1,7 +1,7 @@
-import { DeveloperPrompts } from './DeveloperPrompts.js';
-import { PromptModule } from './PromptModule.js';
-import { TaskPrompts } from './TaskPrompts.js';
-import { logger } from '../../utils/logger.js';
+import { DeveloperPrompts } from './DeveloperPrompts';
+import { PromptModule } from './PromptModule';
+import { TaskPrompts } from './TaskPrompts';
+import { logger } from '../../utils/logger';
 
 export function registerPromptModules(): PromptModule[] {
   const modules: PromptModule[] = [];

@@ -1,4 +1,4 @@
-import { ProjectArchitectureReport } from './IJavaAnalysisProvider.js';
+import { ProjectArchitectureReport } from './IJavaAnalysisProvider';
 
 export interface CapabilityCandidate {
   name: string;

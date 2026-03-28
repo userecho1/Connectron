@@ -1,5 +1,5 @@
 import { Resource, TextResourceContents } from '@modelcontextprotocol/sdk/types.js';
-import { ResourceModule } from './ResourceModule.js';
+import { ResourceModule } from './ResourceModule';
 
 const TEAM_CONVENTIONS_URI = 'conventions://engineering/git-jira-java';
 

@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug HTTP (compiled)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/dist/index.js",
+      "restart": true,
+      "console": "integratedTerminal",
+      "env": {
+        "TRANSPORT_MODE": "http",
+        "API_KEY": "your_dev_api_key",
+        "GIT_REPO_ROOT": "D:/file/nodeproject/test-connectron",
+        "PORT": "3000",
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug HTTP (ts-node)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/index.ts",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "restart": true,
+      "console": "integratedTerminal",
+      "env": {
+        "TRANSPORT_MODE": "http",
+        "API_KEY": "your_dev_api_key",
+        "GIT_REPO_ROOT": "D:/file/nodeproject/test-connectron",
+        "PORT": "3000",
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
-import { CapabilityCandidate } from './ICapabilityExtractionProvider.js';
-import { ProjectArchitectureReport } from './IJavaAnalysisProvider.js';
+import { CapabilityCandidate } from './ICapabilityExtractionProvider';
+import { ProjectArchitectureReport } from './IJavaAnalysisProvider';
 
 export interface DomainServerPlan {
   domain: string;

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
-import { ToolModule } from '../shared/ToolModule.js';
-import { WorkflowExecuteMonolithEvolutionUseCase } from '../../../application/usecases/workflow/index.js';
-import { executionPlanStore, WorkflowExecutionPlan } from './ExecutionPlanStore.js';
+import { ToolModule } from '../shared/ToolModule';
+import { WorkflowExecuteMonolithEvolutionUseCase } from '../../../application/usecases/workflow/index';
+import { executionPlanStore, WorkflowExecutionPlan } from './ExecutionPlanStore';
 import { mkdir, writeFile } from 'fs/promises';
 import { dirname } from 'path';
 import { exec as execCallback } from 'child_process';

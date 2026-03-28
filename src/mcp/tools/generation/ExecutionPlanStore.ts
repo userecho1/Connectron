@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { WorkflowExecuteMonolithEvolutionResult } from '../../../application/usecases/workflow/command/WorkflowExecuteMonolithEvolutionUseCase.js';
+import { WorkflowExecuteMonolithEvolutionResult } from '../../../application/usecases/workflow/command/WorkflowExecuteMonolithEvolutionUseCase';
 
 export type ExecutionPlanStatus = 'draft' | 'confirmed' | 'applied';
 

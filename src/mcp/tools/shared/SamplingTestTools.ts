@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { ToolModule } from './ToolModule.js';
+import { ToolModule } from './ToolModule';
 
 export const TEST_SAMPLING_TOOL_NAME = 'test_mcp_sampling';
 

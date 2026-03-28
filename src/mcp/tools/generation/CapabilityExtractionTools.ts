@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
-import { ToolModule } from '../shared/ToolModule.js';
-import { ExtractCapabilitiesUseCase } from '../../../application/usecases/capability-extractor/index.js';
+import { ToolModule } from '../shared/ToolModule';
+import { ExtractCapabilitiesUseCase } from '../../../application/usecases/capability-extractor/index';
 
 export const EXTRACT_CAPABILITIES_TOOL_NAME = 'extract_capabilities';
 

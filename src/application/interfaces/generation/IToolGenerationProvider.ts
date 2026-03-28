@@ -1,4 +1,4 @@
-import { CapabilityCandidate } from './ICapabilityExtractionProvider.js';
+import { CapabilityCandidate } from './ICapabilityExtractionProvider';
 
 export interface GenerateMcpToolRequest {
   service_method: string;

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
-import { ToolModule } from '../shared/ToolModule.js';
+import { ToolModule } from '../shared/ToolModule';
 import {
   GetGitStatusUseCase,
   GetGitLogUseCase,
@@ -9,7 +9,7 @@ import {
   GitPushUseCase,
   GitPullUseCase,
   GitCheckoutUseCase,
-} from '../../../application/usecases/git/index.js';
+} from '../../../application/usecases/git/index';
 
 const gitStatusInputSchema = z
   .object({

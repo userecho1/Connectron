@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
-import { ToolModule } from '../shared/ToolModule.js';
-import { GenerateMcpToolUseCase } from '../../../application/usecases/tool-generator/index.js';
+import { ToolModule } from '../shared/ToolModule';
+import { GenerateMcpToolUseCase } from '../../../application/usecases/tool-generator/index';
 
 export const GENERATE_MCP_TOOL_TOOL_NAME = 'generate_mcp_tool';
 

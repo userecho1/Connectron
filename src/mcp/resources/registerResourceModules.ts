@@ -1,6 +1,6 @@
-import { logger } from '../../utils/logger.js';
-import { ResourceModule } from './ResourceModule.js';
-import { TeamConventionsResources } from './TeamConventionsResources.js';
+import { logger } from '../../utils/logger';
+import { ResourceModule } from './ResourceModule';
+import { TeamConventionsResources } from './TeamConventionsResources';
 
 export function registerResourceModules(): ResourceModule[] {
   const modules: ResourceModule[] = [];

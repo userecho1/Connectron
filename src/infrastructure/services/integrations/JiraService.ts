@@ -11,7 +11,7 @@ import {
   TransitionJiraIssueInput,
   UpdateJiraIssueFieldsInput,
 } from '../../../application/interfaces';
-import { env } from '../../../config/env.js';
+import { env } from '../../../config/env';
 
 export class JiraService implements JiraIssueReader {
   private readonly client: InstanceType<typeof JiraClient>;
