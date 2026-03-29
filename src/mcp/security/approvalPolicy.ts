@@ -2,13 +2,17 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { logger } from '../../utils/logger';
 
-const mutatingToolNames = new Set<string>([
-  // Git write operations
+const gitWriteToolNames = new Set<string>([
   'git_add',
   'git_commit',
   'git_push',
   'git_pull',
   'git_checkout',
+]);
+
+const mutatingToolNames = new Set<string>([
+  // Git write operations
+  ...gitWriteToolNames,
   // GitHub write operations
   'create_or_update_file',
   'create_pull_request',
@@ -31,6 +35,7 @@ const mutatingToolNames = new Set<string>([
 
 export class ApprovalContext {
   // Session approval context
+  public gitAutoApprove: boolean = false;
 }
 
 export function isMutatingTool(toolName: string): boolean {
@@ -57,6 +62,11 @@ function extractTextFromContent(content: unknown): string {
 export async function enforceApprovalPolicy(server: Server, toolName: string, rawArgs: unknown, context: ApprovalContext): Promise<CallToolResult | null> {
   if (!mutatingToolNames.has(toolName)) {
     return null; // Not a protected tool, proceed
+  }
+
+  if (context.gitAutoApprove && gitWriteToolNames.has(toolName)) {
+    logger.info(`[SECURITY] Bypassing Sampling for ${toolName} because gitAutoApprove is currently ON.`);
+    return null;
   }
 
   logger.info(`[SECURITY] Initiating Sampling approval for tool: ${toolName}`);

@@ -46,6 +46,7 @@ import {
   WorkflowEvolutionTools,
 } from '../generation';
 import { ApprovalContext } from '../../security/approvalPolicy';
+import { SecurityTools } from './SecurityTools';
 
 type ModuleRegistrar = (modules: ToolModule[], context: ApprovalContext) => void;
 
@@ -177,6 +178,8 @@ function registerWorkflowEvolutionTools(modules: ToolModule[], context: Approval
 
 export function registerToolModules(context: ApprovalContext): ToolModule[] {
   const modules: ToolModule[] = [];
+
+  modules.push(new SecurityTools(context));
 
   const registerAll: Array<ModuleRegistrar> = [
     registerSafely(registerDatabaseTools, 'Database tool module disabled due to invalid or missing DB configuration.'),
