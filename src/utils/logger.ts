@@ -1,3 +1,5 @@
+import { env } from '../config/env';
+
 export interface ILogger {
   info(message: string, context?: Record<string, any>): void;
   error(message: string, error?: Error | unknown, context?: Record<string, any>): void;
@@ -7,7 +9,11 @@ export interface ILogger {
 
 export class ConsoleLogger implements ILogger {
   info(message: string, context?: Record<string, any>): void {
-    console.log(`[INFO] ${message}`, context ? JSON.stringify(context) : '');
+    if (env.TRANSPORT_MODE === 'stdio') {
+      console.error(`[INFO] ${message}`, context ? JSON.stringify(context) : '');
+    } else {
+      console.log(`[INFO] ${message}`, context ? JSON.stringify(context) : '');
+    }
   }
 
   error(message: string, error?: Error | unknown, context?: Record<string, any>): void {
@@ -19,8 +25,12 @@ export class ConsoleLogger implements ILogger {
   }
 
   debug(message: string, context?: Record<string, any>): void {
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug(`[DEBUG] ${message}`, context ? JSON.stringify(context) : '');
+    if (env.NODE_ENV !== 'production') {
+      if (env.TRANSPORT_MODE === 'stdio') {
+        console.error(`[DEBUG] ${message}`, context ? JSON.stringify(context) : '');
+      } else {
+        console.debug(`[DEBUG] ${message}`, context ? JSON.stringify(context) : '');
+      }
     }
   }
 }

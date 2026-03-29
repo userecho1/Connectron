@@ -31,7 +31,6 @@ import {
 import { buildGithubServiceFromEnv, buildJiraServiceFromEnv, buildGitService } from '../../../infrastructure/services/integrations';
 import { logger } from '../../../utils/logger';
 import { DatabaseTools, GithubTools, JiraTools, GitTools } from '../integrations';
-import { SamplingTestTools } from './SamplingTestTools';
 import { ToolModule } from './ToolModule';
 import {
   JavaAnalysisService,
@@ -46,27 +45,28 @@ import {
   DomainMcpGeneratorTools,
   WorkflowEvolutionTools,
 } from '../generation';
+import { ApprovalContext } from '../../security/approvalPolicy';
 
-type ModuleRegistrar = (modules: ToolModule[]) => void;
+type ModuleRegistrar = (modules: ToolModule[], context: ApprovalContext) => void;
 
 function registerSafely(register: ModuleRegistrar, disabledMessage: string): ModuleRegistrar {
-  return (modules: ToolModule[]) => {
+  return (modules: ToolModule[], context: ApprovalContext) => {
     try {
-      register(modules);
+      register(modules, context);
     } catch (error) {
       logger.warn(disabledMessage, { error });
     }
   };
 }
 
-function registerDatabaseTools(modules: ToolModule[]): void {
+function registerDatabaseTools(modules: ToolModule[], context: ApprovalContext): void {
   const sqlClient = new SqlServerClient(buildSqlServerConfigFromEnv());
   const queryDatabaseUseCase = new QueryDatabaseUseCase(sqlClient);
   modules.push(new DatabaseTools(queryDatabaseUseCase));
   logger.info('Database tool module enabled.');
 }
 
-function registerGithubTools(modules: ToolModule[]): void {
+function registerGithubTools(modules: ToolModule[], context: ApprovalContext): void {
   const githubService = buildGithubServiceFromEnv();
   const listPullRequestsUseCase = new ListPullRequestsUseCase(githubService);
   const getFileContentUseCase = new GetFileContentUseCase(githubService);
@@ -85,7 +85,7 @@ function registerGithubTools(modules: ToolModule[]): void {
   logger.info('GitHub tool module enabled.');
 }
 
-function registerJiraTools(modules: ToolModule[]): void {
+function registerJiraTools(modules: ToolModule[], context: ApprovalContext): void {
   const jiraService = buildJiraServiceFromEnv();
   const searchJiraIssuesUseCase = new SearchJiraIssuesUseCase(jiraService);
   const createTicketUseCase = new CreateTicketUseCase(jiraService);
@@ -106,7 +106,7 @@ function registerJiraTools(modules: ToolModule[]): void {
   logger.info('Jira tool module enabled.');
 }
 
-function registerGitTools(modules: ToolModule[]): void {
+function registerGitTools(modules: ToolModule[], context: ApprovalContext): void {
   const gitService = buildGitService();
   const getGitStatusUseCase = new GetGitStatusUseCase(gitService);
   const getGitLogUseCase = new GetGitLogUseCase(gitService);
@@ -115,6 +115,7 @@ function registerGitTools(modules: ToolModule[]): void {
   const gitPushUseCase = new GitPushUseCase(gitService);
   const gitPullUseCase = new GitPullUseCase(gitService);
   const gitCheckoutUseCase = new GitCheckoutUseCase(gitService);
+  // Passed context to GitTools
   modules.push(
     new GitTools(
       getGitStatusUseCase,
@@ -129,35 +130,35 @@ function registerGitTools(modules: ToolModule[]): void {
   logger.info('Git tool module enabled.');
 }
 
-function registerJavaAnalysisTools(modules: ToolModule[]): void {
+function registerJavaAnalysisTools(modules: ToolModule[], context: ApprovalContext): void {
   const javaAnalysisService = new JavaAnalysisService();
   const analyzeJavaProjectUseCase = new AnalyzeJavaProjectUseCase(javaAnalysisService);
   modules.push(new JavaAnalysisTools(analyzeJavaProjectUseCase));
   logger.info('Java analysis tool module enabled.');
 }
 
-function registerCapabilityExtractionTools(modules: ToolModule[]): void {
+function registerCapabilityExtractionTools(modules: ToolModule[], context: ApprovalContext): void {
   const capabilityExtractionService = new CapabilityExtractionService();
   const extractCapabilitiesUseCase = new ExtractCapabilitiesUseCase(capabilityExtractionService);
   modules.push(new CapabilityExtractionTools(extractCapabilitiesUseCase));
   logger.info('Capability extraction tool module enabled.');
 }
 
-function registerToolGeneratorTools(modules: ToolModule[]): void {
+function registerToolGeneratorTools(modules: ToolModule[], context: ApprovalContext): void {
   const toolGenerationService = new ToolGenerationService();
   const generateMcpToolUseCase = new GenerateMcpToolUseCase(toolGenerationService);
   modules.push(new ToolGeneratorTools(generateMcpToolUseCase));
   logger.info('Tool generator module enabled.');
 }
 
-function registerDomainMcpGeneratorTools(modules: ToolModule[]): void {
+function registerDomainMcpGeneratorTools(modules: ToolModule[], context: ApprovalContext): void {
   const domainMcpGenerationService = new DomainMcpGenerationService();
   const generateDomainMcpServersUseCase = new GenerateDomainMcpServersUseCase(domainMcpGenerationService);
   modules.push(new DomainMcpGeneratorTools(generateDomainMcpServersUseCase));
   logger.info('Domain MCP generator module enabled.');
 }
 
-function registerWorkflowEvolutionTools(modules: ToolModule[]): void {
+function registerWorkflowEvolutionTools(modules: ToolModule[], context: ApprovalContext): void {
   const javaAnalysisService = new JavaAnalysisService();
   const capabilityExtractionService = new CapabilityExtractionService();
   const toolGenerationService = new ToolGenerationService();
@@ -174,11 +175,8 @@ function registerWorkflowEvolutionTools(modules: ToolModule[]): void {
   logger.info('Workflow evolution tool module enabled.');
 }
 
-export function registerToolModules(): ToolModule[] {
+export function registerToolModules(context: ApprovalContext): ToolModule[] {
   const modules: ToolModule[] = [];
-
-  // Register baseline utility tool modules unconditionally
-  modules.push(new SamplingTestTools());
 
   const registerAll: Array<ModuleRegistrar> = [
     registerSafely(registerDatabaseTools, 'Database tool module disabled due to invalid or missing DB configuration.'),
@@ -193,7 +191,7 @@ export function registerToolModules(): ToolModule[] {
   ];
 
   for (const register of registerAll) {
-    register(modules);
+    register(modules, context);
   }
 
   return modules;

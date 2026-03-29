@@ -18,139 +18,104 @@ import { apiKeyAuthMiddleware } from '../auth/middleware';
 import { ToolModule } from './tools/shared/ToolModule';
 import { PromptModule } from './prompts/PromptModule';
 import { ResourceModule } from './resources/ResourceModule';
-import { enforceApprovalPolicy } from './security/approvalPolicy';
+import { enforceApprovalPolicy, ApprovalContext, isMutatingTool } from './security/approvalPolicy';
 
 export class NexusFlowServer {
-  private server: Server;
   public app: express.Express;
 
-  // 保存 SSE transport 的引用
-  private sseTransport: SSEServerTransport | null = null;
+  // 保存 SSE session transport 的引用, Key 为 SessionId
+  private sseSessions = new Map<string, SSEServerTransport>();
   private httpTransport: StreamableHTTPServerTransport | null = null;
-  private readonly toolModules: readonly ToolModule[];
-  private readonly promptModules: readonly PromptModule[];
-  private readonly resourceModules: readonly ResourceModule[];
 
   constructor(
-    toolModules: readonly ToolModule[] = [],
-    promptModules: readonly PromptModule[] = [],
-    resourceModules: readonly ResourceModule[] = [],
+    private readonly toolModulesFactory: (context: ApprovalContext) => ToolModule[],
+    private readonly promptModulesFactory: () => PromptModule[],
+    private readonly resourceModulesFactory: () => ResourceModule[],
   ) {
-    this.server = new Server(
-      {
-        name: 'NexusFlow',
-        version: '1.0.0',
-      },
-      {
-        capabilities: {
-          tools: {},
-          prompts: {},
-          resources: {},
-        },
-      }
+    this.app = express();
+  }
+
+  /**
+   * 为每个新的连接/客户端动态创建一个隔离的 Server 和对应的模块
+   */
+  private createSessionServer(): Server {
+    const serverHandler = new Server(
+      { name: 'NexusFlow', version: '1.0.0' },
+      { capabilities: { tools: {}, prompts: {}, resources: {} } }
     );
 
-    this.app = express();
-    this.toolModules = toolModules;
-    this.promptModules = promptModules;
-    this.resourceModules = resourceModules;
+    // 对于每个会话，都提供一个独属于它自己的 ApprovalContext 配置
+    const approvalContext = new ApprovalContext();
+    const tools = this.toolModulesFactory(approvalContext);
+    const prompts = this.promptModulesFactory();
+    const resources = this.resourceModulesFactory();
 
-    // Inject server instance into tool modules that support it (for sampling, etc)
-    for (const module of this.toolModules) {
+    // 绑定上下文
+    for (const module of tools) {
       if (module.setServer) {
-        module.setServer(this.server);
+        module.setServer(serverHandler);
       }
     }
 
-    this.registerHandlers();
-  }
-
-  private registerHandlers() {
-    // ==== 工具与 Prompts 注册点 ====
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
-      const tools = this.toolModules.flatMap((module) => [...module.listTools()]);
-
-      return {
-        tools,
-      };
+    serverHandler.setRequestHandler(ListToolsRequestSchema, async () => {
+      return { tools: tools.flatMap(module => [...module.listTools()]) };
     });
 
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    serverHandler.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
       logger.info(`Tool executed: ${name}`, args);
 
       try {
-        enforceApprovalPolicy(name, args);
+        const argsForTool = args ? { ...args } : {};
+        // If the approval policy returns a result, it means it intercepted the call
+        const policyResult = await enforceApprovalPolicy(serverHandler, name, argsForTool, approvalContext);
+        if (policyResult) return policyResult;
 
-        for (const module of this.toolModules) {
-          const toolResult = await module.callTool(name, args);
-          if (toolResult) {
-            return toolResult;
-          }
+        for (const module of tools) {
+          const toolResult = await module.callTool(name, argsForTool);
+          if (toolResult) return toolResult;
         }
 
-        return {
-          isError: true,
-          content: [
-            {
-              type: 'text',
-              text: `Unknown tool: ${name}`,
-            },
-          ],
-        };
+        return { isError: true, content: [{ type: 'text', text: `Unknown tool: ${name}` }] };
       } catch (error) {
         logger.error('Tool execution failed', error, { toolName: name });
-        return {
-          isError: true,
-          content: [
-            {
-              type: 'text',
-              text: error instanceof Error ? error.message : 'Tool execution failed',
-            },
-          ],
-        };
+        return { isError: true, content: [{ type: 'text', text: error instanceof Error ? error.message : 'Tool execution failed' }] };
       }
     });
 
-    // ==== Prompts 注册点 ====
-    this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
-      const prompts = this.promptModules.flatMap((module) => [...module.listPrompts()]);
-      return { prompts };
+    serverHandler.setRequestHandler(ListPromptsRequestSchema, async () => {
+      return { prompts: prompts.flatMap((module) => [...module.listPrompts()]) };
     });
 
-    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    serverHandler.setRequestHandler(GetPromptRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
-      for (const module of this.promptModules) {
+      for (const module of prompts) {
         const result = await module.getPrompt(name, args);
-        if (result) {
-          return result;
-        }
+        if (result) return result;
       }
       throw new Error(`Prompt not found: ${name}`);
     });
 
-    // ==== Resources 注册点 ====
-    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
-      const resources = this.resourceModules.flatMap((module) => [...module.listResources()]);
-      return { resources };
+    serverHandler.setRequestHandler(ListResourcesRequestSchema, async () => {
+      return { resources: resources.flatMap((module) => [...module.listResources()]) };
     });
 
-    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    serverHandler.setRequestHandler(ReadResourceRequestSchema, async (request) => {
       const { uri } = request.params;
-      for (const module of this.resourceModules) {
+      for (const module of resources) {
         const contents = await module.readResource(uri);
-        if (contents) {
-          return { contents };
-        }
+        if (contents) return { contents };
       }
-
       throw new Error(`Resource not found: ${uri}`);
     });
+
+    return serverHandler;
   }
 
   private async mountStdioTransport(): Promise<void> {
     const transport = new StdioServerTransport();
-    await this.server.connect(transport);
+    const sessionServer = this.createSessionServer();
+    await sessionServer.connect(transport);
     logger.info('Mounted [STDIO] transport.');
   }
 
@@ -159,69 +124,59 @@ export class NexusFlowServer {
       try {
         logger.info('New SSE connection establishing...');
         const transport = new SSEServerTransport('/message', res);
-        this.sseTransport = transport;
-        await this.server.connect(this.sseTransport);
+        const sessionServer = this.createSessionServer();
+        
+        await sessionServer.connect(transport);
+        
+        this.sseSessions.set(transport.sessionId, transport);
 
         req.on('close', () => {
-          logger.info('SSE connection closed');
-          if (this.sseTransport === transport) {
-            this.sseTransport = null;
-          }
+          logger.info(`SSE connection closed for session: ${transport.sessionId}`);
+          this.sseSessions.delete(transport.sessionId);
         });
       } catch (error) {
         logger.error('Failed to establish SSE transport', error);
         if (!res.headersSent) {
-          res.status(500).json({
-            jsonrpc: '2.0',
-            error: { code: -32603, message: 'Failed to establish SSE transport' },
-            id: null,
-          });
+          res.status(500).json({ jsonrpc: '2.0', error: { code: -32603, message: 'Failed to establish SSE transport' }, id: null });
         }
       }
     });
 
     this.app.post('/message', apiKeyAuthMiddleware, async (req, res) => {
-      if (!this.sseTransport) {
-        res.status(400).json({
-          jsonrpc: '2.0',
-          error: { code: -32000, message: 'No active SSE connection. Connect to /sse first.' },
-          id: null,
-        });
+      // 从 query 参数中获取 sessionId，SSEServerTransport 创建的客户端会自动携带这个参数
+      const sessionId = req.query.sessionId as string;
+      const transport = this.sseSessions.get(sessionId);
+
+      if (!transport) {
+        res.status(400).json({ jsonrpc: '2.0', error: { code: -32000, message: 'No active SSE connection for this sessionId. Connect to /sse first.' }, id: null });
         return;
       }
 
-      await this.sseTransport.handlePostMessage(req, res, req.body);
+      await transport.handlePostMessage(req, res, req.body);
     });
 
     logger.info('Mounted [SSE] transport routes: GET /sse, POST /message.');
   }
 
   private async mountHttpTransportRoutes(): Promise<void> {
+    const sessionServer = this.createSessionServer();
     this.httpTransport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => crypto.randomUUID(),
     });
-    await this.server.connect(this.httpTransport);
+    
+    await sessionServer.connect(this.httpTransport);
 
     this.app.all('/mcp', apiKeyAuthMiddleware, async (req, res) => {
       try {
         if (!this.httpTransport) {
-          res.status(500).json({
-            jsonrpc: '2.0',
-            error: { code: -32603, message: 'HTTP transport is not initialized' },
-            id: null,
-          });
+          res.status(500).json({ jsonrpc: '2.0', error: { code: -32603, message: 'HTTP transport not initialized' }, id: null });
           return;
         }
-
         await this.httpTransport.handleRequest(req, res, req.body);
       } catch (error) {
         logger.error('Failed to handle HTTP transport request', error);
         if (!res.headersSent) {
-          res.status(500).json({
-            jsonrpc: '2.0',
-            error: { code: -32603, message: 'Internal server error' },
-            id: null,
-          });
+          res.status(500).json({ jsonrpc: '2.0', error: { code: -32603, message: 'Internal server error' }, id: null });
         }
       }
     });
@@ -229,11 +184,7 @@ export class NexusFlowServer {
     logger.info('Mounted [HTTP] streamable transport route: ALL /mcp.');
   }
 
-  /**
-   * 统一封装 Transport 初始化与挂载
-   * 根据 TRANSPORT_MODE 动态选择，避免 transport 逻辑散落
-   */
-  private async setupTransport(): Promise<void> {
+  public async start(): Promise<void> {
     const mode = env.TRANSPORT_MODE;
 
     if (mode === 'stdio') {
@@ -241,42 +192,21 @@ export class NexusFlowServer {
       return;
     }
 
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: '10mb' }));
 
     if (mode === 'sse') {
       this.mountSseRoutes();
-      return;
-    }
-
-    if (mode === 'http') {
+    } else if (mode === 'http') {
       await this.mountHttpTransportRoutes();
-      return;
-    }
-
-    throw new Error(`Unsupported TRANSPORT_MODE: ${mode}`);
-  }
-
-  /**
-   * 启动服务器
-   */
-  public async start() {
-    try {
-      // 1. 初始化对应 Transport
-      await this.setupTransport();
-
-      // 2. 对于 Web 协议，启动 Express 监听
-      if (env.TRANSPORT_MODE === 'sse' || env.TRANSPORT_MODE === 'http') {
-        const port = env.PORT;
-        this.app.listen(port, () => {
-          logger.info(`NexusFlow MCP Server listening on port ${port} via [${env.TRANSPORT_MODE.toUpperCase()}] mode.`);
-          if (env.TRANSPORT_MODE === 'sse') {
-            logger.info('-> Wait for clients to connect via GET /sse');
-          }
-        });
-      }
-    } catch (error) {
-      logger.error('Failed to start NexusFlow server', error);
+    } else {
+      logger.error(`Unknown transport mode: ${mode}`);
       process.exit(1);
     }
+
+    const port = env.PORT;
+    this.app.listen(port, () => {
+      logger.info(`NexusFlow HTTP Server listening on port ${port} [Mode: ${mode}]`);
+    });
   }
 }
+
