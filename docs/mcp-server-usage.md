@@ -171,6 +171,10 @@ API_KEY=replace_with_real_secret
 - DB_PASS
 - DB_NAME
 
+数据库工具说明：
+- `query_database`：执行只读 SQL 查询（SELECT 类）。
+- `format_sqlserver_sql`：仅调整 SQL 的空格、缩进、换行，并可选写入文件（`outputPath`）。
+
 ### GitHub（使用 GitHub 工具时填写）
 - GITHUB_TOKEN
 
