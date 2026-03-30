@@ -174,6 +174,8 @@ API_KEY=replace_with_real_secret
 数据库工具说明：
 - `query_database`：执行只读 SQL 查询（SELECT 类）。
 - `format_sqlserver_sql`：仅调整 SQL 的空格、缩进、换行，并可选写入文件（`outputPath`）。
+- `format_sqlserver_sql` 可选参数：`formatSqlInStringLiterals=true`，会尝试格式化字符串字面量中的 SQL（例如 `DECLARE @s='SELECT ...'`）。
+- 当 `formatSqlInStringLiterals=true` 时，可用 `stringLiteralSqlIndentSize` 控制字符串内 SQL 的额外缩进（默认 `2`）。
 
 ### GitHub（使用 GitHub 工具时填写）
 - GITHUB_TOKEN

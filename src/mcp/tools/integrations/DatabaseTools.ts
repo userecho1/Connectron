@@ -21,6 +21,17 @@ const formatSqlServerInputSchema = z
     sql: z.string().min(1).describe('Raw SQL text to format. Only whitespace, indentation and line breaks are changed.'),
     indentSize: z.number().int().min(1).max(8).default(2).describe('Indent spaces per nested block. Default: 2.'),
     uppercaseKeywords: z.boolean().default(true).describe('Whether SQL keywords should be uppercased. Default: true.'),
+    formatSqlInStringLiterals: z
+      .boolean()
+      .default(false)
+      .describe("Also format SQL fragments found in string literals. Example: DECLARE @s = 'SELECT ...'"),
+    stringLiteralSqlIndentSize: z
+      .number()
+      .int()
+      .min(0)
+      .max(12)
+      .default(2)
+      .describe('Extra indentation (spaces) added to SQL lines inside string literals. Default: 2.'),
     outputPath: z.string().min(1).optional().describe('Optional output file path for saving formatted SQL.'),
   })
   .strict();
@@ -75,6 +86,16 @@ export const formatSqlServerToolDefinition: Tool = {
       uppercaseKeywords: {
         type: 'boolean',
         description: 'Whether SQL keywords should be uppercased. Default: true.',
+      },
+      formatSqlInStringLiterals: {
+        type: 'boolean',
+        description: 'Also format SQL fragments found in string literals. Default: false.',
+      },
+      stringLiteralSqlIndentSize: {
+        type: 'number',
+        minimum: 0,
+        maximum: 12,
+        description: 'Extra indentation (spaces) added to SQL lines inside string literals. Default: 2.',
       },
       outputPath: {
         type: 'string',
@@ -243,15 +264,82 @@ function tokenizeSql(sql: string): SqlToken[] {
   return tokens;
 }
 
-function formatSqlServer(sql: string, indentSize: number, uppercaseKeywords: boolean): string {
+interface SqlFormatOptions {
+  indentSize: number;
+  uppercaseKeywords: boolean;
+  formatSqlInStringLiterals: boolean;
+  stringLiteralSqlIndentSize: number;
+  currentDepth?: number;
+}
+
+const MAX_NESTED_STRING_SQL_DEPTH = 2;
+
+function looksLikeSqlSnippet(text: string): boolean {
+  const compact = text.trim().replace(/\s+/g, ' ');
+  if (compact.length < 12) {
+    return false;
+  }
+
+  const upper = compact.toUpperCase();
+  const startKeywords = ['SELECT', 'WITH', 'INSERT', 'UPDATE', 'DELETE', 'MERGE', 'DECLARE', 'BEGIN', 'EXEC', 'CREATE'];
+  if (!startKeywords.some((keyword) => upper.startsWith(keyword))) {
+    return false;
+  }
+
+  const hasSqlClause = [' FROM ', ' WHERE ', ' JOIN ', ' INTO ', ' SET ', ' VALUES ', ' BEGIN ', ' END ', ';'].some(
+    (clause) => upper.includes(clause),
+  );
+
+  return hasSqlClause || upper.startsWith('DECLARE');
+}
+
+function formatSqlInsideStringLiteral(literal: string, options: SqlFormatOptions): string {
+  if (!options.formatSqlInStringLiterals) {
+    return literal;
+  }
+
+  const depth = options.currentDepth ?? 0;
+  if (depth >= MAX_NESTED_STRING_SQL_DEPTH) {
+    return literal;
+  }
+
+  if (!literal.startsWith("'") || !literal.endsWith("'") || literal.length < 2) {
+    return literal;
+  }
+
+  const rawInner = literal.slice(1, -1).replace(/''/g, "'");
+  const leadingWhitespace = rawInner.match(/^\s*/)?.[0] ?? '';
+  const trailingWhitespace = rawInner.match(/\s*$/)?.[0] ?? '';
+  const candidate = rawInner.trim();
+
+  if (!candidate || !looksLikeSqlSnippet(candidate)) {
+    return literal;
+  }
+
+  const formattedInnerSql = formatSqlServer(candidate, {
+    ...options,
+    currentDepth: depth + 1,
+  });
+
+  const literalIndent = ' '.repeat(options.stringLiteralSqlIndentSize);
+  const withLiteralIndent = formattedInnerSql
+    .split('\n')
+    .map((line) => (line.trim().length === 0 ? line : `${literalIndent}${line}`))
+    .join('\n');
+  const rebuilt = `${leadingWhitespace}${withLiteralIndent}${trailingWhitespace}`;
+  return `'${rebuilt.replace(/'/g, "''")}'`;
+}
+
+function formatSqlServer(sql: string, options: SqlFormatOptions): string {
   const tokens = tokenizeSql(sql);
   const lines: string[] = [];
   let currentLine = '';
   let indentLevel = 0;
   let activeClause: string | null = null;
   let parenthesisDepth = 0;
+  const depth = options.currentDepth ?? 0;
 
-  const pad = () => ' '.repeat(Math.max(0, indentLevel) * indentSize);
+  const pad = () => ' '.repeat(Math.max(0, indentLevel) * options.indentSize);
   const lastChar = () => (currentLine.length === 0 ? '' : currentLine[currentLine.length - 1]);
 
   const pushLine = () => {
@@ -287,7 +375,7 @@ function formatSqlServer(sql: string, indentSize: number, uppercaseKeywords: boo
 
     if (token.type === 'word') {
       const upper = token.value.toUpperCase();
-      const rendered = uppercaseKeywords && KEYWORDS.has(upper) ? upper : token.value;
+      const rendered = options.uppercaseKeywords && KEYWORDS.has(upper) ? upper : token.value;
 
       if (DEDENT_BEFORE_KEYWORDS.has(upper)) {
         pushLine();
@@ -316,7 +404,16 @@ function formatSqlServer(sql: string, indentSize: number, uppercaseKeywords: boo
       continue;
     }
 
-    if (token.type === 'number' || token.type === 'string' || token.type === 'bracket') {
+    if (token.type === 'string') {
+      const renderedString = formatSqlInsideStringLiteral(token.value, {
+        ...options,
+        currentDepth: depth,
+      });
+      addToken(renderedString);
+      continue;
+    }
+
+    if (token.type === 'number' || token.type === 'bracket') {
       addToken(token.value);
       continue;
     }
@@ -417,7 +514,12 @@ export class DatabaseTools implements ToolModule {
 
       if (name === FORMAT_SQLSERVER_SQL_TOOL_NAME) {
         const input = formatSqlServerInputSchema.parse(rawArgs ?? {});
-        const formattedSql = formatSqlServer(input.sql, input.indentSize, input.uppercaseKeywords);
+        const formattedSql = formatSqlServer(input.sql, {
+          indentSize: input.indentSize,
+          uppercaseKeywords: input.uppercaseKeywords,
+          formatSqlInStringLiterals: input.formatSqlInStringLiterals,
+          stringLiteralSqlIndentSize: input.stringLiteralSqlIndentSize,
+        });
 
         let savedTo: string | undefined;
         if (input.outputPath) {
